@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Học Toán Cùng Bé</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fdf2f8; 
+            background-image: radial-gradient(#fbcfe8 2px, transparent 2px), radial-gradient(#fbcfe8 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            touch-action: pan-x pan-y;
+            overflow-x: hidden;
+        }
+
+        /* Nút Chibi & Hiệu ứng đàn hồi */
+        .btn-chibi {
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .btn-chibi:active {
+            transform: scale(0.95) translateY(4px) !important;
+            box-shadow: 0 0px 0 0 !important;
+        }
+
+        /* Ô nhập liệu */
+        .input-chibi {
+            outline: none;
+            transition: all 0.2s ease-out;
+        }
+        .input-chibi:focus {
+            border-color: #ec4899 !important;
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.3) !important;
+            transform: scale(1.05);
+        }
+
+        /* Quản lý các View với hiệu ứng mượt mà */
+        .view-section {
+            display: none;
+            opacity: 0;
+        }
+        .view-section.active {
+            display: flex;
+            animation: viewEnter 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes viewEnter {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Chip Buttons (Thay cho Dropdown) */
+        .chip-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .chip-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Modal Alert */
+        #alert-modal {
+            display: none;
+        }
+        #alert-modal.show {
+            display: flex;
+            animation: fadeIn 0.2s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; backdrop-filter: blur(0px); }
+            to { opacity: 1; backdrop-filter: blur(4px); }
+        }
+        .modal-content-pop {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Màn hình Loading */
+        #loading-screen {
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+        .bounce-math {
+            animation: mathBounce 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes mathBounce {
+            0% { transform: translateY(0) scale(1.1); }
+            100% { transform: translateY(-20px) scale(0.9); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- MÀN HÌNH LOADING -->
+    <div id="loading-screen" class="fixed inset-0 z-[200] bg-pink-50 flex flex-col items-center justify-center">
+        <div class="text-7xl bounce-math mb-6 drop-shadow-md">🧮</div>
+        <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 animate-pulse">
+            Đang chuẩn bị...
+        </h2>
+        <div class="mt-4 flex gap-2">
+            <div class="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+            <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+            <div class="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+        </div>
+    </div>
+
+    <!-- ALERT MODAL -->
+    <div id="alert-modal" class="fixed inset-0 z-[100] items-center justify-center bg-gray-900/40">
+        <div class="bg-white rounded-[2rem] p-6 max-w-sm w-[90%] border-[5px] border-orange-400 shadow-[0_10px_25px_rgba(0,0,0,0.2)] modal-content-pop text-center relative">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-orange-100 p-3 rounded-full border-4 border-orange-400 shadow-sm">
+                <i class="fa-solid fa-face-frown-open text-4xl text-orange-500"></i>
+            </div>
+            <h3 class="text-2xl font-black text-orange-600 mt-8 mb-2">Khoan đã bé ơi!</h3>
+            <p class="text-gray-600 font-bold mb-6">Vẫn còn ô trống chưa được điền kìa. Bé hãy điền đầy đủ đáp án trước khi nộp bài nhé!</p>
+            <button onclick="closeAlert()" class="btn-chibi w-full bg-orange-500 text-white font-black text-xl py-3 rounded-xl border-b-4 border-orange-700 hover:bg-orange-400">
+                Dạ vâng!
+            </button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH 1: CÀI ĐẶT -->
+    <div id="view-setup" class="view-section min-h-screen items-center justify-center p-3 md:p-4 py-8">
+        <div class="bg-white rounded-[2rem] p-5 md:p-6 max-w-md w-full border-[6px] border-purple-400 shadow-[8px_12px_0px_#c084fc] relative">
+            <!-- Nút Âm Thanh -->
+            <button id="btn-sound-toggle" class="btn-chibi absolute top-4 left-4 w-10 h-10 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-200 z-20" onclick="toggleSound()">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+
+            <!-- Nút Cài Đặt Random Mini -->
+            <button class="btn-chibi absolute top-4 right-4 w-10 h-10 rounded-full bg-indigo-100 border-2 border-indigo-300 flex items-center justify-center text-indigo-600 hover:bg-indigo-200 z-20" onclick="randomizeSettings()" title="Cài đặt ngẫu nhiên">
+                <i class="fa-solid fa-dice"></i>
+            </button>
+
+            <div class="text-center mb-5 relative z-10 mt-6 md:mt-2">
+                <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-1 drop-shadow-sm">
+                    Tạo Bài Tập
+                </h1>
+                <p class="text-gray-500 font-bold text-sm md:text-base">Học Toán Vui Nhộn 🎓</p>
+            </div>
+
+            <div class="space-y-4 relative z-10">
+                <div class="bg-gray-50 p-4 rounded-2xl border-2 border-gray-200 space-y-4 shadow-inner">
+                    
+                    <!-- 1. Phép toán -->
+                    <div>
+                        <label class="block text-gray-700 font-bold text-[12px] md:text-[13px] mb-2 uppercase tracking-wide">
+                            1. Phép toán (Phần chung):
+                        </label>
+                        <div class="grid grid-cols-4 gap-2" id="ops-container"></div>
+                    </div>
+
+                    <!-- 2. Độ khó & Bảng CC -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-gray-700 font-bold text-[12px] mb-2 uppercase flex items-center gap-1">
+                                <i class="fa-solid fa-gauge-high text-orange-500"></i> Độ khó:
+                            </label>
+                            <div class="flex flex-col gap-1.5" id="difficulty-container"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-bold text-[12px] mb-2 uppercase">
+                                2. Bảng Cửu Chương:
+                            </label>
+                            <div class="grid grid-cols-2 gap-1.5" id="table-container"></div>
+                        </div>
+                    </div>
+
+                    <div class="border-t-2 border-gray-200 border-dashed my-2"></div>
+
+                    <!-- 3. Giao diện Chip Buttons mới thay thế Dropdown -->
+                    <div class="space-y-3">
+                        <!-- Số câu -->
+                        <div>
+                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Số câu hỏi chung:</label>
+                            <div class="grid grid-cols-4 gap-2" id="chip-qcount"></div>
+                        </div>
+                        
+                        <!-- Thời gian -->
+                        <div>
+                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Phút / Bài:</label>
+                            <div class="grid grid-cols-4 gap-2" id="chip-time"></div>
+                        </div>
+
+                        <!-- Tổng số bài -->
+                        <div>
+                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Tổng số vòng thi:</label>
+                            <div class="grid grid-cols-5 gap-1.5" id="chip-rounds"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="btn-chibi w-full bg-gradient-to-r from-green-400 to-green-600 text-white font-black text-2xl py-4 rounded-full border-4 border-green-700 shadow-[0_6px_0_#15803d] flex justify-center items-center gap-3 hover:from-green-500 hover:to-green-600">
+                    <i class="fa-solid fa-play"></i> BẮT ĐẦU THI!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH 2: LÀM BÀI -->
+    <div id="view-playing" class="view-section flex-col min-h-screen pb-32">
+        <div class="sticky top-0 z-40 p-4">
+            <div class="max-w-3xl mx-auto bg-white rounded-full border-4 border-gray-800 shadow-[4px_6px_0px_#1f2937] p-3 flex justify-between items-center px-4 md:px-6 transition-all" id="header-bar">
+                <div class="text-sm md:text-xl font-bold text-gray-700 flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-4">
+                    <span id="playing-round-badge" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full border-2 border-indigo-300">
+                        Bài 1/1
+                    </span>
+                    <span class="flex items-center gap-1 text-[13px] md:text-base">
+                        Đã làm: <span id="playing-progress" class="text-pink-600 font-black">0/10</span>
+                    </span>
+                </div>
+                <div id="timer-badge" class="text-lg md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300 transition-colors">
+                    <i class="fa-regular fa-clock"></i> <span id="timer-text">10:00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto p-4 space-y-6 w-full">
+            <div class="bg-white/60 p-3 md:p-4 rounded-3xl border-4 border-dashed border-gray-300 mb-8 transform transition-transform hover:scale-[1.01]">
+                <h2 class="text-xl md:text-2xl font-black text-blue-600 mb-4 flex items-center gap-2">
+                    <span class="bg-blue-500 text-white p-2 rounded-xl text-sm md:text-base shadow-sm">Phần 1</span> Tổng Hợp
+                </h2>
+                <div id="main-questions-container" class="space-y-4"></div>
+            </div>
+
+            <div class="bg-red-50 p-4 md:p-6 rounded-3xl border-4 border-red-300 relative transform transition-transform hover:scale-[1.01]">
+                <div class="absolute -top-5 -left-2 rotate-[-5deg] bg-yellow-400 text-red-800 font-black px-4 py-1 rounded-full border-4 border-red-800 shadow-sm animate-pulse">
+                    🌟 Đặc biệt!
+                </div>
+                <h2 id="table-title" class="text-xl md:text-2xl font-black text-red-600 mb-6 text-center underline decoration-wavy decoration-red-300 underline-offset-8 mt-4">
+                    Bảng cửu chương
+                </h2>
+                <div id="table-questions-container" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 w-full p-4 bg-white/90 backdrop-blur-md border-t-4 border-gray-200 flex justify-center z-50">
+            <button onclick="attemptSubmitRound()" class="btn-chibi w-full max-w-md bg-green-500 text-white font-black text-2xl py-4 rounded-full border-4 border-green-700 shadow-[0_6px_0_#15803d] flex justify-center items-center gap-2 hover:bg-green-400">
+                <i class="fa-solid fa-circle-check"></i> NỘP BÀI THÔI!
+            </button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH 3: KẾT QUẢ TỪNG BÀI -->
+    <div id="view-round-result" class="view-section min-h-screen py-10 px-4 items-start">
+        <div class="max-w-4xl mx-auto w-full">
+            <div class="bg-white rounded-[3rem] border-[6px] border-blue-400 shadow-[8px_12px_0px_#60a5fa] p-6 md:p-8 text-center mb-8 relative">
+                <div id="result-round-badge" class="absolute top-4 left-4 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-2xl font-black border-2 border-indigo-300"></div>
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-600 mb-2 mt-8 md:mt-0">Điểm Bài Này</h2>
+                <div class="flex justify-center items-center gap-2 md:gap-4 my-4 md:my-6">
+                    <div id="result-score" class="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-700 animate-bounce">0</div>
+                    <div class="text-4xl md:text-6xl font-black text-gray-300">/</div>
+                    <div id="result-total" class="text-4xl md:text-6xl font-black text-gray-400">0</div>
+                </div>
+                <h3 id="result-feedback" class="text-2xl md:text-3xl font-black mb-8">...</h3>
+                
+                <button id="btn-next-round" onclick="nextRoundOrFinish()" class="btn-chibi w-full md:w-auto text-white font-bold text-xl px-8 py-4 rounded-full border-4 shadow-[0_6px_0_rgba(0,0,0,0.2)] inline-flex justify-center items-center gap-2"></button>
+            </div>
+
+            <div class="bg-white rounded-[2rem] border-4 border-gray-300 p-4 md:p-6 shadow-lg space-y-8">
+                <div>
+                    <h3 class="text-xl md:text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">Sửa Bài: Phần Tổng Hợp</h3>
+                    <div id="correction-main"></div>
+                </div>
+                <div>
+                    <h3 id="correction-table-title" class="text-xl md:text-2xl font-bold text-red-600 mb-4 border-b-2 border-red-200 pb-2">Sửa Bài: Bảng Cửu Chương</h3>
+                    <div id="correction-table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH 4: BẢNG ĐIỂM TỔNG KẾT -->
+    <div id="view-final-result" class="view-section min-h-screen py-10 px-4 items-center justify-center">
+        <div class="max-w-2xl w-full bg-white rounded-[3rem] border-[6px] border-yellow-400 shadow-[8px_12px_0px_#facc15] p-6 md:p-10 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-40"><i class="fa-solid fa-trophy text-yellow-500 text-8xl transform rotate-12"></i></div>
+            <h2 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 mb-8 text-center drop-shadow-sm">
+                BẢNG ĐIỂM TỔNG KẾT
+            </h2>
+
+            <div id="final-history-list" class="space-y-4 mb-8 relative z-10"></div>
+
+            <div class="bg-gradient-to-r from-yellow-100 to-orange-100 border-4 border-orange-300 rounded-3xl p-6 text-center mb-8 relative z-10 shadow-inner">
+                <h3 class="text-xl md:text-2xl font-bold text-orange-800 mb-2">Tổng Điểm Tất Cả Các Bài</h3>
+                <div class="text-6xl md:text-7xl font-black text-red-600 flex justify-center items-baseline gap-2">
+                    <span id="final-grand-score" class="animate-pulse">0</span> <span class="text-3xl md:text-4xl text-red-400">/ <span id="final-grand-total">0</span></span>
+                </div>
+            </div>
+
+            <button onclick="goToSetup()" class="btn-chibi w-full bg-purple-500 text-white font-black text-2xl py-4 rounded-full border-4 border-purple-700 shadow-[0_6px_0_#7e22ce] flex justify-center items-center gap-2 hover:bg-purple-400 relative z-10">
+                <i class="fa-solid fa-rotate-left"></i> VỀ TRANG CHỦ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- CẤU HÌNH & STATE ---
+        const cuteEmojis = ['🐻', '🐰', '🐯', '🦊', '🐷', '🐸', '🐹', '🐥', '🦄', '🦖', '🍎', '🍓', '🎈', '⭐', '🌻'];
+        const AUDIO_URLS = {
+            click: 'https://actions.google.com/sounds/v1/ui/button_click.ogg',
+            submit: 'https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg',
+            perfect: 'https://actions.google.com/sounds/v1/cartoon/magic_chime_chord.ogg',
+            good: 'https://actions.google.com/sounds/v1/crowds/light_applause.ogg',
+            tryHarder: 'https://actions.google.com/sounds/v1/cartoon/slip_bobble.ogg',
+            alert: 'https://actions.google.com/sounds/v1/cartoon/slip.ogg'
+        };
+
+        // Cache Audio objects for faster playback
+        const audios = {};
+        for (let key in AUDIO_URLS) {
+            audios[key] = new Audio(AUDIO_URLS[key]);
+        }
+
+        let config = {
+            ops: { add: true, sub: true, mul: false, div: false },
+            difficulty: 'medium', 
+            table: 'random', 
+            qcount: 10,
+            time: 10,
+            rounds: 1,
+            sound: true
+        };
+
+        let state = {
+            currentRound: 1,
+            mainQs: [],
+            tableQs: [],
+            answers: {},
+            timeLeft: 0,
+            timerId: null,
+            history: []
+        };
+
+        // --- GIAO DIỆN KHỞI ĐỘNG (LOADING) ---
+        window.addEventListener('load', () => {
+            renderSetupUI();
+            
+            // Giả lập thời gian load một chút để hiển thị animation đáng yêu
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+                switchView('setup');
+            }, 1200);
+        });
+
+        // --- ÂM THANH ---
+        function playSound(type) {
+            if (!config.sound) return;
+            try {
+                const sound = audios[type].cloneNode(); // Clone để play chèn lên nhau
+                sound.volume = type === 'click' ? 0.3 : 0.6;
+                sound.play().catch(e => {});
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            config.sound = !config.sound;
+            const btn = document.getElementById('btn-sound-toggle');
+            btn.innerHTML = config.sound ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+            if (config.sound) playSound('click');
+        }
+
+        // --- LẮNG NGHE CLICK CHUNG ĐỂ TẠO ÂM THANH ---
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('.chip-btn')) {
+                // Tránh phát đúp với các nút có sẵn hàm playSound bên trong
+                if (!e.target.closest('[onclick*="playSound"]')) {
+                    playSound('click');
+                }
+            }
+        });
+
+        // --- RENDER SETUP UI BẰNG NÚT CHIP ---
+        function renderSetupUI() {
+            // 1. Render Phép toán
+            const opsConfig = [
+                { id: 'add', label: '+', color: 'bg-green-100 text-green-700 border-green-300' },
+                { id: 'sub', label: '-', color: 'bg-red-100 text-red-700 border-red-300' },
+                { id: 'mul', label: '×', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+                { id: 'div', label: '÷', color: 'bg-purple-100 text-purple-700 border-purple-300' }
+            ];
+            let opsHTML = '';
+            opsConfig.forEach(op => {
+                const active = config.ops[op.id];
+                const cls = active ? `${op.color} border-b-4 translate-y-0` : 'bg-white text-gray-300 border-gray-200 border-b-2 translate-y-[2px]';
+                opsHTML += `<div onclick="toggleOp('${op.id}')" class="chip-btn flex justify-center items-center py-2 rounded-xl font-black text-2xl transition-all shadow-sm ${cls}">${op.label}</div>`;
+            });
+            document.getElementById('ops-container').innerHTML = opsHTML;
+
+            // 2. Render Độ khó
+            const diffConfig = [
+                { id: 'easy', label: 'Dễ 🟢', style: 'border-green-400 text-green-700 bg-white' },
+                { id: 'medium', label: 'T.Bình 🟡', style: 'border-yellow-400 text-yellow-700 bg-white' },
+                { id: 'hard', label: 'Khó 🔴', style: 'border-red-400 text-red-700 bg-white' }
+            ];
+            let diffHTML = '';
+            diffConfig.forEach(lvl => {
+                const active = config.difficulty === lvl.id;
+                const cls = active ? `border-2 shadow-sm font-bold ${lvl.style}` : 'bg-transparent border border-gray-200 text-gray-400';
+                diffHTML += `<div onclick="setSetting('difficulty', '${lvl.id}')" class="chip-btn py-1 px-1 text-center rounded-lg text-[11px] md:text-[13px] transition-all ${cls}">${lvl.label}</div>`;
+            });
+            document.getElementById('difficulty-container').innerHTML = diffHTML;
+
+            // 3. Render Bảng Cửu Chương
+            const tables = ['random', 2, 3, 4, 5];
+            let tblHTML = '';
+            tables.forEach(t => {
+                const active = config.table == t;
+                const cls = active ? 'bg-red-500 text-white border-red-700 border-b-4' : 'bg-white text-red-400 border-red-200 border-b-2';
+                const colSpan = t === 'random' ? 'col-span-2' : '';
+                const label = t === 'random' ? '<i class="fa-solid fa-dice mr-1"></i> Random' : `B.${t}`;
+                tblHTML += `<div onclick="setSetting('table', '${t}')" class="chip-btn flex justify-center items-center py-1.5 rounded-xl font-bold text-[12px] md:text-[14px] transition-all ${colSpan} ${cls}">${label}</div>`;
+            });
+            document.getElementById('table-container').innerHTML = tblHTML;
+
+            // 4. Render Số câu hỏi (Chip grid)
+            const qcounts = [5, 10, 15, 20];
+            let qcHTML = '';
+            qcounts.forEach(v => {
+                const active = config.qcount === v;
+                const cls = active ? 'bg-pink-500 text-white border-pink-700 border-b-[3px]' : 'bg-white text-pink-500 border-pink-200 border-b-[2px]';
+                qcHTML += `<div onclick="setSetting('qcount', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all ${cls}">${v}</div>`;
+            });
+            document.getElementById('chip-qcount').innerHTML = qcHTML;
+
+            // 5. Render Thời gian
+            const times = [5, 10, 15, 20];
+            let tHTML = '';
+            times.forEach(v => {
+                const active = config.time === v;
+                const cls = active ? 'bg-blue-500 text-white border-blue-700 border-b-[3px]' : 'bg-white text-blue-500 border-blue-200 border-b-[2px]';
+                tHTML += `<div onclick="setSetting('time', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all ${cls}">${v}</div>`;
+            });
+            document.getElementById('chip-time').innerHTML = tHTML;
+
+            // 6. Render Tổng số bài
+            const rounds = [1, 2, 3, 4, 5];
+            let rHTML = '';
+            rounds.forEach(v => {
+                const active = config.rounds === v;
+                const cls = active ? 'bg-emerald-500 text-white border-emerald-700 border-b-[3px]' : 'bg-white text-emerald-500 border-emerald-200 border-b-[2px]';
+                rHTML += `<div onclick="setSetting('rounds', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all ${cls}">${v}</div>`;
+            });
+            document.getElementById('chip-rounds').innerHTML = rHTML;
+        }
+
+        // Functions set state
+        function toggleOp(id) {
+            playSound('click');
+            const newOps = { ...config.ops, [id]: !config.ops[id] };
+            if (Object.values(newOps).some(v => v)) {
+                config.ops = newOps;
+                renderSetupUI();
+            }
+        }
+        function setSetting(key, val) {
+            playSound('click');
+            config[key] = val;
+            renderSetupUI();
+        }
+
+        function randomizeSettings() {
+            playSound('click');
+            config.rounds = [1, 2, 3, 4, 5][Math.floor(Math.random() * 5)];
+            config.time = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
+            config.qcount = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
+            config.difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
+            config.table = ['random', 2, 3, 4, 5][Math.floor(Math.random() * 5)];
+            
+            const newOps = {
+                add: Math.random() > 0.5, sub: Math.random() > 0.5,
+                mul: Math.random() > 0.5, div: Math.random() > 0.5
+            };
+            if (!newOps.add && !newOps.sub && !newOps.mul && !newOps.div) newOps.add = true;
+            config.ops = newOps;
+            
+            renderSetupUI();
+        }
+
+        // --- ALERT MODAL LOGIC ---
+        function showAlert() {
+            playSound('alert');
+            document.getElementById('alert-modal').classList.add('show');
+        }
+
+        function closeAlert() {
+            playSound('click');
+            document.getElementById('alert-modal').classList.remove('show');
+        }
+
+        // --- HELPERS ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const getEmoji = (index) => cuteEmojis[index % cuteEmojis.length];
+
+        // --- GAME LOGIC ---
+        function startGame() {
+            playSound('click');
+            state.currentRound = 1;
+            state.history = [];
+            generateRoundQuestions();
+            startPlayingView();
+        }
+
+        function generateRoundQuestions() {
+            state.mainQs = [];
+            const activeOps = Object.keys(config.ops).filter(k => config.ops[k]);
+            
+            for (let i = 0; i < config.qcount; i++) {
+                const opType = activeOps[Math.floor(Math.random() * activeOps.length)];
+                let leftStr = '', rightStr = '', correctAns = 0;
+
+                if (opType === 'add') {
+                    let a, b;
+                    if (config.difficulty === 'easy') { a = rand(1, 10); b = rand(1, 9); } 
+                    else if (config.difficulty === 'medium') { a = rand(10, 50); b = rand(10, 40); } 
+                    else {
+                        let a1 = rand(1, 7); let a2 = rand(5, 9);
+                        let b1 = rand(1, 8 - a1); let b2 = rand(10 - a2, 9);
+                        a = a1 * 10 + a2; b = b1 * 10 + b2;
+                    }
+                    leftStr = `${a} + ${b} = `; correctAns = a + b;
+                } 
+                else if (opType === 'sub') {
+                    let a, b;
+                    if (config.difficulty === 'easy') { a = rand(5, 20); b = rand(1, a - 1); } 
+                    else if (config.difficulty === 'medium') { a = rand(20, 99); b = rand(1, a - 1); } 
+                    else {
+                        let a1 = rand(2, 9); let a2 = rand(0, 4);
+                        let b1 = rand(1, a1 - 1); let b2 = rand(a2 + 1, 9);
+                        a = a1 * 10 + a2; b = b1 * 10 + b2;
+                    }
+                    leftStr = `${a} - ${b} = `; correctAns = a - b;
+                } 
+                else if (opType === 'mul') {
+                    const a = rand(2, 5); const b = rand(1, 9); 
+                    leftStr = `${a} × ${b} = `; correctAns = a * b;
+                } 
+                else if (opType === 'div') {
+                    const b = rand(2, 5); const ans = rand(1, 9); 
+                    const a = b * ans;
+                    leftStr = `${a} ÷ ${b} = `; correctAns = ans;
+                }
+                state.mainQs.push({ id: `m_${state.currentRound}_${i}`, leftStr, rightStr, correctAns, type: opType });
+            }
+
+            state.tableQs = [];
+            const multipliers = [];
+            while(multipliers.length < 5) {
+                const r = rand(1, 10);
+                if(!multipliers.includes(r)) multipliers.push(r);
+            }
+
+            multipliers.forEach((m, index) => {
+                let leftStr = '', rightStr = '', correctAns = 0;
+                const isMissingProduct = Math.random() > 0.5;
+                let tableForThisQuestion = config.table === 'random' ? rand(2, 5) : config.table;
+
+                if (isMissingProduct) {
+                    leftStr = `${tableForThisQuestion} × ${m} = `; rightStr = ''; correctAns = tableForThisQuestion * m;
+                } else {
+                    leftStr = `${tableForThisQuestion} × `; rightStr = ` = ${tableForThisQuestion * m}`; correctAns = m;
+                }
+                state.tableQs.push({ id: `t_${state.currentRound}_${index}`, leftStr, rightStr, correctAns, type: 'table', usedTable: tableForThisQuestion });
+            });
+
+            state.answers = {};
+            state.timeLeft = config.time * 60;
+        }
+
+        window.handleInput = function(id, inputEl) {
+            inputEl.value = inputEl.value.replace(/[^0-9]/g, '');
+            state.answers[id] = inputEl.value;
+            
+            const answeredCount = Object.keys(state.answers).filter(k => state.answers[k] !== "").length;
+            const total = state.mainQs.length + state.tableQs.length;
+            
+            const progressEl = document.getElementById('playing-progress');
+            progressEl.innerText = `${answeredCount}/${total}`;
+            // Thêm hiệu ứng màu khi làm xong
+            if (answeredCount === total) progressEl.className = "text-green-600 font-black animate-pulse";
+            else progressEl.className = "text-pink-600 font-black";
+            
+            const wrapper = inputEl.closest('.p-4');
+            const statusDiv = wrapper.querySelector('.status-indicator');
+            if (state.answers[id] !== "") {
+                statusDiv.innerHTML = '<div class="w-10 h-10 bg-green-400 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-white transform scale-110 transition-transform"><i class="fa-solid fa-check"></i></div>';
+            } else {
+                statusDiv.innerHTML = '<div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-gray-400 transition-transform">?</div>';
+            }
+        };
+
+        function renderQuestionRow(q, index, isTablePart = false) {
+            const colors = ['bg-blue-100 border-blue-400 shadow-[4px_6px_0px_#60a5fa]', 'bg-pink-100 border-pink-400 shadow-[4px_6px_0px_#f472b6]', 'bg-yellow-100 border-yellow-400 shadow-[4px_6px_0px_#facc15]', 'bg-green-100 border-green-400 shadow-[4px_6px_0px_#4ade80]', 'bg-purple-100 border-purple-400 shadow-[4px_6px_0px_#c084fc]'];
+            const colorClass = isTablePart ? "bg-white border-red-400 shadow-[4px_6px_0px_#f87171]" : colors[index % colors.length];
+            const emojiBg = isTablePart ? "bg-red-50 border-red-200" : "bg-white border-gray-200";
+            const inputBorderClass = isTablePart ? "border-red-300 text-red-600 focus:border-pink-500" : "border-gray-300 text-blue-600 focus:border-pink-500";
+            const emojiIndex = isTablePart ? index + state.mainQs.length : index;
+
+            return `
+                <div class="rounded-3xl border-[5px] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:scale-[1.01] ${colorClass}">
+                    <div class="flex items-center gap-3 text-2xl md:text-3xl font-bold text-gray-800 w-full md:w-auto justify-center">
+                        <span class="text-3xl md:text-4xl ${emojiBg} p-2 md:p-3 rounded-2xl shadow-sm border-2 hidden sm:block">
+                            ${getEmoji(emojiIndex)}
+                        </span>
+                        <div class="flex items-center gap-2 md:gap-3 whitespace-nowrap">
+                            ${q.leftStr}
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" 
+                                class="input-chibi w-16 md:w-20 h-12 md:h-16 text-center text-2xl md:text-3xl font-black rounded-2xl border-4 bg-white ${inputBorderClass}"
+                                value="${state.answers[q.id] || ''}"
+                                oninput="handleInput('${q.id}', this)">
+                            ${q.rightStr}
+                        </div>
+                    </div>
+                    <div class="hidden md:block status-indicator">
+                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-gray-400">?</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateTimerUI() {
+            const m = Math.floor(state.timeLeft / 60);
+            const s = state.timeLeft % 60;
+            document.getElementById('timer-text').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            
+            const badge = document.getElementById('timer-badge');
+            if (state.timeLeft <= 60) {
+                badge.className = "text-lg md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-red-100 text-red-600 border-red-300 animate-pulse";
+            } else {
+                badge.className = "text-lg md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300";
+            }
+        }
+
+        function startPlayingView() {
+            document.getElementById('playing-round-badge').innerText = `Bài ${state.currentRound}/${config.rounds}`;
+            const prog = document.getElementById('playing-progress');
+            prog.innerText = `0/${state.mainQs.length + state.tableQs.length}`;
+            prog.className = "text-pink-600 font-black";
+            
+            let mainHTML = '';
+            state.mainQs.forEach((q, i) => mainHTML += renderQuestionRow(q, i, false));
+            document.getElementById('main-questions-container').innerHTML = mainHTML;
+
+            let tableHTML = '';
+            state.tableQs.forEach((q, i) => tableHTML += renderQuestionRow(q, i, true));
+            document.getElementById('table-questions-container').innerHTML = tableHTML;
+            
+            document.getElementById('table-title').innerText = config.table === 'random' ? "Bảng cửu chương Ngẫu Nhiên" : `Bảng cửu chương ${config.table}`;
+
+            switchView('playing');
+            updateTimerUI();
+
+            if (state.timerId) clearInterval(state.timerId);
+            state.timerId = setInterval(() => {
+                state.timeLeft--;
+                if (state.timeLeft <= 0) {
+                    state.timeLeft = 0;
+                    clearInterval(state.timerId);
+                    processSubmit(); // Hết giờ thì nộp luôn không cảnh báo
+                } else {
+                    updateTimerUI();
+                }
+            }, 1000);
+        }
+
+        function attemptSubmitRound() {
+            const totalQs = state.mainQs.length + state.tableQs.length;
+            const answeredCount = Object.keys(state.answers).filter(k => state.answers[k] !== "").length;
+
+            if (answeredCount < totalQs) {
+                showAlert();
+            } else {
+                processSubmit();
+            }
+        }
+
+        function processSubmit() {
+            if (state.timerId) clearInterval(state.timerId);
+            playSound('submit');
+            
+            let roundScore = 0;
+            const allQs = [...state.mainQs, ...state.tableQs];
+            allQs.forEach(q => {
+                if (parseInt(state.answers[q.id]) === q.correctAns) roundScore++;
+            });
+
+            const percentage = Math.round((roundScore / allQs.length) * 100);
+            setTimeout(() => {
+                if (percentage === 100) playSound('perfect');
+                else if (percentage >= 80) playSound('good');
+                else playSound('tryHarder');
+            }, 500);
+
+            state.history.push({
+                roundNumber: state.currentRound,
+                score: roundScore,
+                total: allQs.length,
+                mainQuestions: [...state.mainQs],
+                tableQuestions: [...state.tableQs],
+                answers: { ...state.answers },
+                tableSetting: config.table
+            });
+
+            renderRoundResult();
+        }
+
+        function renderCorrectionRow(q, index) {
+            const userAns = state.answers[q.id];
+            const isAnswered = userAns !== undefined && userAns !== '';
+            const isCorrect = isAnswered && parseInt(userAns) === q.correctAns;
+            
+            const bgClass = isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+            const inputAnsClass = !isAnswered ? 'text-gray-400 border-gray-400' : isCorrect ? 'text-green-600 border-green-600' : 'text-red-500 border-red-500 line-through decoration-4';
+            
+            let statusHTML = '';
+            if (isCorrect) {
+                statusHTML = `<div class="flex items-center gap-1 text-green-600 font-bold bg-green-100 px-3 py-1 md:px-4 md:py-2 rounded-full border-2 border-green-300 shadow-sm"><i class="fa-solid fa-circle-check"></i> Đúng</div>`;
+            } else {
+                statusHTML = `
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <div class="flex items-center gap-1 text-red-500 font-bold bg-red-100 px-2 py-1 md:px-3 md:py-2 rounded-full border-2 border-red-300 shadow-sm text-sm md:text-base"><i class="fa-solid fa-circle-xmark"></i> Sai</div>
+                        <div class="text-base md:text-lg font-black text-green-600 flex items-center gap-1 md:gap-2">Đáp án: <span class="bg-green-200 px-2 py-1 rounded-xl border-2 border-green-500 shadow-sm">${q.correctAns}</span></div>
+                    </div>`;
+            }
+
+            return `
+                <div class="flex flex-col md:flex-row items-center justify-between p-4 rounded-2xl border-2 mb-3 ${bgClass} transition-all hover:scale-[1.01]">
+                    <div class="text-lg md:text-xl font-bold text-gray-700 flex items-center gap-2 mb-2 md:mb-0">
+                        <span class="text-2xl hidden sm:inline">${getEmoji(index)}</span>
+                        Câu ${index + 1}: 
+                        <span class="ml-1 md:ml-2">
+                            ${q.leftStr}
+                            <span class="inline-block border-b-4 mx-1 px-2 text-center min-w-[3rem] ${inputAnsClass}">
+                                ${isAnswered ? userAns : '?'}
+                            </span>
+                            ${q.rightStr}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-4">${statusHTML}</div>
+                </div>
+            `;
+        }
+
+        function renderRoundResult() {
+            const currentData = state.history[state.history.length - 1];
+            const percentage = Math.round((currentData.score / currentData.total) * 100);
+            
+            document.getElementById('result-round-badge').innerText = `Bài ${state.currentRound}/${config.rounds}`;
+            document.getElementById('result-score').innerText = currentData.score;
+            document.getElementById('result-total').innerText = currentData.total;
+            
+            let feedback = "", feedbackColor = "";
+            if (percentage === 100) { feedback = "Xuất Sắc Tuyệt Đối! 🏆"; feedbackColor = "text-yellow-500"; } 
+            else if (percentage >= 80) { feedback = "Giỏi Quá Bé Ơi! 🌟"; feedbackColor = "text-green-500"; } 
+            else if (percentage >= 50) { feedback = "Cố Gắng Lên Nữa Nhé! 💪"; feedbackColor = "text-blue-500"; } 
+            else { feedback = "Cùng Ôn Tập Lại Nào! 📚"; feedbackColor = "text-orange-500"; }
+            
+            const fbEl = document.getElementById('result-feedback');
+            fbEl.innerText = feedback;
+            fbEl.className = `text-2xl md:text-3xl font-black mb-8 ${feedbackColor}`;
+
+            const isLast = state.currentRound === config.rounds;
+            const btnNext = document.getElementById('btn-next-round');
+            if (isLast) {
+                btnNext.className = "btn-chibi w-full md:w-auto text-white font-bold text-xl px-8 py-4 rounded-full border-4 shadow-[0_6px_0_rgba(0,0,0,0.2)] inline-flex justify-center items-center gap-2 bg-purple-500 hover:bg-purple-400 border-purple-700";
+                btnNext.innerHTML = `<i class="fa-solid fa-trophy"></i> Xem Bảng Điểm`;
+            } else {
+                btnNext.className = "btn-chibi w-full md:w-auto text-white font-bold text-xl px-8 py-4 rounded-full border-4 shadow-[0_6px_0_rgba(0,0,0,0.2)] inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-400 border-orange-700";
+                btnNext.innerHTML = `Làm Bài ${state.currentRound + 1} <i class="fa-solid fa-chevron-right"></i>`;
+            }
+
+            let cMainHTML = '';
+            currentData.mainQuestions.forEach((q, i) => cMainHTML += renderCorrectionRow(q, i));
+            document.getElementById('correction-main').innerHTML = cMainHTML;
+
+            let cTableHTML = '';
+            currentData.tableQuestions.forEach((q, i) => cTableHTML += renderCorrectionRow(q, i + currentData.mainQuestions.length));
+            document.getElementById('correction-table').innerHTML = cTableHTML;
+            document.getElementById('correction-table-title').innerText = currentData.tableSetting !== 'random' ? `Sửa Bài: Bảng C.Chương ${currentData.tableSetting}` : "Sửa Bài: Bảng C.Chương Ngẫu Nhiên";
+
+            switchView('round-result');
+        }
+
+        function nextRoundOrFinish() {
+            playSound('click');
+            if (state.currentRound < config.rounds) {
+                state.currentRound++;
+                generateRoundQuestions();
+                startPlayingView();
+            } else {
+                renderFinalResult();
+            }
+        }
+
+        function renderFinalResult() {
+            let grandTotalScore = 0; let grandTotalQs = 0;
+            let listHTML = '';
+            
+            state.history.forEach((r, idx) => { 
+                grandTotalScore += r.score; grandTotalQs += r.total; 
+                listHTML += `
+                    <div class="bg-blue-50 border-4 border-blue-200 rounded-2xl p-4 flex justify-between items-center transition-transform hover:scale-[1.02]">
+                        <div class="text-lg md:text-xl font-bold text-blue-800 flex items-center gap-2">
+                            <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center border-2 border-blue-700 shadow-sm">${r.roundNumber}</div>
+                            Bài số ${r.roundNumber}
+                        </div>
+                        <div class="text-2xl font-black text-blue-600">${r.score} / ${r.total}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('final-history-list').innerHTML = listHTML;
+            document.getElementById('final-grand-score').innerText = grandTotalScore;
+            document.getElementById('final-grand-total').innerText = grandTotalQs;
+
+            switchView('final-result');
+        }
+
+        function goToSetup() {
+            playSound('click');
+            renderSetupUI();
+            switchView('setup');
+        }
+    </script>
+</body>
+</html>
