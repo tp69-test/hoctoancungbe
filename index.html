@@ -45,6 +45,16 @@
             box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.3) !important;
             transform: scale(1.05);
         }
+        
+        /* Ẩn mũi tên của input type number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
 
         /* Quản lý các View với hiệu ứng mượt mà */
         .view-section {
@@ -202,8 +212,8 @@
                             <div class="grid grid-cols-4 gap-2" id="chip-qcount"></div>
                         </div>
                         <div>
-                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Phút / Bài:</label>
-                            <div class="grid grid-cols-4 gap-2" id="chip-time"></div>
+                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Thời gian / Bài (Phút):</label>
+                            <div id="time-container" class="flex flex-col gap-2 w-full"></div>
                         </div>
                         <div>
                             <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Tổng số vòng thi:</label>
@@ -240,7 +250,7 @@
                 </div>
 
                 <div id="timer-badge" class="text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300 transition-colors">
-                    <i class="fa-regular fa-clock"></i> <span id="timer-text">10:00</span>
+                    <i id="timer-icon" class="fa-regular fa-clock"></i> <span id="timer-text">10:00</span>
                 </div>
             </div>
         </div>
@@ -356,7 +366,7 @@
             difficulty: 'medium', 
             table: 'random', 
             qcount: 10,
-            time: 10,
+            time: 10, // Số phút, 0 = Tắt
             rounds: 1,
             sound: true
         };
@@ -461,15 +471,27 @@
             });
             document.getElementById('chip-qcount').innerHTML = qcHTML;
 
-            // 5. Thời gian
-            const times = [5, 10, 15, 20];
-            let tHTML = '';
+            // 5. Thời gian (CÓ THỂ TÙY CHỈNH/ TẮT)
+            const times = [0, 5, 10, 15]; // 0 là tắt
+            let tHTML = '<div class="grid grid-cols-4 gap-2">';
             times.forEach(v => {
                 const active = config.time === v;
                 const cls = active ? 'bg-blue-500 text-white border-blue-700 border-b-[3px]' : 'bg-white text-blue-500 border-blue-200 border-b-[2px]';
-                tHTML += `<div onclick="setSetting('time', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all ${cls}">${v}</div>`;
+                const label = v === 0 ? 'Tắt' : v;
+                tHTML += `<div onclick="setSetting('time', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all flex-1 ${cls}">${label}</div>`;
             });
-            document.getElementById('chip-time').innerHTML = tHTML;
+            tHTML += '</div>';
+
+            // Nút để nhập số tùy chỉnh
+            const isCustom = !times.includes(config.time);
+            const customCls = isCustom ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-300 border-b-[3px]' : 'bg-white border-blue-200 text-blue-500 border-b-[2px]';
+            tHTML += `<input type="number" inputmode="numeric" pattern="[0-9]*" min="1" max="99" placeholder="Khác" 
+                class="input-chibi w-full px-2 py-1.5 rounded-lg font-black text-sm text-center outline-none transition-all ${customCls}"
+                value="${isCustom && config.time > 0 ? config.time : ''}"
+                oninput="handleCustomTime(this)"
+                onfocus="this.select()">`;
+            
+            document.getElementById('time-container').innerHTML = tHTML;
 
             // 6. Số bài
             const rounds = [1, 2, 3, 4, 5];
@@ -481,6 +503,23 @@
             });
             document.getElementById('chip-rounds').innerHTML = rHTML;
         }
+
+        // --- XỬ LÝ NHẬP THỜI GIAN TÙY CHỈNH ---
+        window.handleCustomTime = function(el) {
+            let num = parseInt(el.value);
+            if (isNaN(num) || num < 0) {
+                config.time = 0; // Nếu nhập linh tinh thì coi như Tắt
+            } else {
+                config.time = num;
+            }
+            
+            // Cập nhật giao diện mà không re-render để không bị mất focus
+            const container = document.getElementById('time-container');
+            container.querySelectorAll('.chip-btn').forEach(btn => {
+                btn.className = btn.className.replace('bg-blue-500 text-white border-blue-700 border-b-[3px]', 'bg-white text-blue-500 border-blue-200 border-b-[2px]');
+            });
+            el.className = `input-chibi w-full px-2 py-1.5 rounded-lg font-black text-sm text-center outline-none transition-all bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-300 border-b-[3px]`;
+        };
 
         function toggleOp(id) {
             playSound('click');
@@ -499,7 +538,7 @@
         function randomizeSettings() {
             playSound('click');
             config.rounds = [1, 2, 3, 4, 5][Math.floor(Math.random() * 5)];
-            config.time = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
+            config.time = [0, 5, 10, 15, 20][Math.floor(Math.random() * 5)]; // Cập nhật có khả năng random ra tắt
             config.qcount = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
             config.difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
             config.table = ['random', 2, 3, 4, 5][Math.floor(Math.random() * 5)];
@@ -625,7 +664,7 @@
             });
 
             state.answers = {};
-            state.timeLeft = config.time * 60;
+            state.timeLeft = config.time * 60; // Sẽ bằng 0 nếu người dùng chọn Tắt (0)
         }
 
         window.handleInput = function(id, inputEl) {
@@ -679,15 +718,26 @@
         }
 
         function updateTimerUI() {
+            const badge = document.getElementById('timer-badge');
+            const icon = document.getElementById('timer-icon');
+            
+            // Xử lý riêng khi tắt thời gian
+            if (config.time === 0) {
+                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-gray-100 text-gray-500 border-gray-300 transition-colors";
+                document.getElementById('timer-text').innerText = "∞";
+                icon.className = "fa-solid fa-infinity";
+                return;
+            }
+
             const m = Math.floor(state.timeLeft / 60);
             const s = state.timeLeft % 60;
             document.getElementById('timer-text').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            icon.className = "fa-regular fa-clock";
             
-            const badge = document.getElementById('timer-badge');
             if (state.timeLeft <= 60) {
-                badge.className = "text-lg md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-red-100 text-red-600 border-red-300 animate-pulse";
+                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-red-100 text-red-600 border-red-300 animate-pulse transition-colors";
             } else {
-                badge.className = "text-lg md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300";
+                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300 transition-colors";
             }
         }
 
@@ -711,16 +761,20 @@
             updateTimerUI();
 
             if (state.timerId) clearInterval(state.timerId);
-            state.timerId = setInterval(() => {
-                state.timeLeft--;
-                if (state.timeLeft <= 0) {
-                    state.timeLeft = 0;
-                    clearInterval(state.timerId);
-                    processSubmit(); 
-                } else {
-                    updateTimerUI();
-                }
-            }, 1000);
+            
+            // Chỉ chạy interval nếu có thiết lập thời gian
+            if (config.time > 0) {
+                state.timerId = setInterval(() => {
+                    state.timeLeft--;
+                    if (state.timeLeft <= 0) {
+                        state.timeLeft = 0;
+                        clearInterval(state.timerId);
+                        processSubmit(); 
+                    } else {
+                        updateTimerUI();
+                    }
+                }, 1000);
+            }
         }
 
         function attemptSubmitRound() {
