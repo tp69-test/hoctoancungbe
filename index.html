@@ -110,11 +110,20 @@
             100% { transform: translateY(-20px) scale(0.9); }
         }
 
-        /* Thanh cuộn cho lịch sử bảng điểm */
+        /* Thanh cuộn cho lịch sử */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Hiệu ứng Emotion */
+        .emotion-pop {
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -132,7 +141,7 @@
         </div>
     </div>
 
-    <!-- ALERT MODAL (Chưa điền đủ) -->
+    <!-- ALERT MODAL -->
     <div id="alert-modal" class="modal-overlay fixed inset-0 z-[100] items-center justify-center bg-gray-900/40">
         <div class="bg-white rounded-[2rem] p-6 max-w-sm w-[90%] border-[5px] border-orange-400 shadow-[0_10px_25px_rgba(0,0,0,0.2)] modal-content-pop text-center relative">
             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-orange-100 p-3 rounded-full border-4 border-orange-400 shadow-sm">
@@ -146,7 +155,7 @@
         </div>
     </div>
 
-    <!-- CONFIRM MODAL (Hỏi khi bấm nút Quay lại) -->
+    <!-- CONFIRM MODAL -->
     <div id="confirm-modal" class="modal-overlay fixed inset-0 z-[100] items-center justify-center bg-gray-900/60">
         <div class="bg-white rounded-[2rem] p-6 max-w-sm w-[90%] border-[5px] border-red-400 shadow-[0_10px_25px_rgba(0,0,0,0.3)] modal-content-pop text-center relative">
             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-100 p-3 rounded-full border-4 border-red-400 shadow-sm">
@@ -168,64 +177,136 @@
     <!-- MÀN HÌNH 1: CÀI ĐẶT -->
     <div id="view-setup" class="view-section min-h-screen items-center justify-center p-3 md:p-4 py-8">
         <div class="bg-white rounded-[2rem] p-5 md:p-6 max-w-md w-full border-[6px] border-purple-400 shadow-[8px_12px_0px_#c084fc] relative">
+            
+            <!-- Nút Âm Thanh & Random -->
             <button id="btn-sound-toggle" class="btn-chibi absolute top-4 left-4 w-10 h-10 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-200 z-20" onclick="toggleSound()">
                 <i class="fa-solid fa-volume-high"></i>
             </button>
-
             <button class="btn-chibi absolute top-4 right-4 w-10 h-10 rounded-full bg-indigo-100 border-2 border-indigo-300 flex items-center justify-center text-indigo-600 hover:bg-indigo-200 z-20" onclick="randomizeSettings()" title="Cài đặt ngẫu nhiên">
                 <i class="fa-solid fa-dice"></i>
             </button>
 
-            <div class="text-center mb-5 relative z-10 mt-6 md:mt-2">
+            <div class="text-center mb-4 mt-6 md:mt-2">
                 <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-1 drop-shadow-sm">
                     Tạo Bài Tập
                 </h1>
                 <p class="text-gray-500 font-bold text-sm md:text-base">Học Toán Vui Nhộn 🎓</p>
             </div>
 
-            <div class="space-y-4 relative z-10">
-                <div class="bg-gray-50 p-4 rounded-2xl border-2 border-gray-200 space-y-4 shadow-inner">
+            <!-- TAB CONTROLS -->
+            <div class="flex bg-gray-100 rounded-xl p-1 mb-4 border-2 border-gray-200">
+                <button onclick="setSetupMode('basic')" id="tab-btn-basic" class="flex-1 py-2 font-black text-sm md:text-base rounded-lg transition-all bg-white text-purple-600 shadow-sm border-2 border-purple-200">
+                    <i class="fa-solid fa-layer-group"></i> P1
+                </button>
+                <button onclick="setSetupMode('custom')" id="tab-btn-custom" class="flex-1 py-2 font-black text-sm md:text-base rounded-lg transition-all text-gray-500 hover:text-gray-700 border-2 border-transparent">
+                    <i class="fa-solid fa-pen-ruler"></i> P2
+                </button>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-2xl border-2 border-gray-200 shadow-inner mb-4">
+                
+                <!-- CONTENT TAB: CƠ BẢN -->
+                <div id="tab-content-basic" class="space-y-4">
                     <div>
                         <label class="block text-gray-700 font-bold text-[12px] md:text-[13px] mb-2 uppercase tracking-wide">
-                            1. Phép toán (Phần chung):
+                            Phép toán (Phần chung):
                         </label>
                         <div class="grid grid-cols-4 gap-2" id="ops-container"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-gray-700 font-bold text-[12px] mb-2 uppercase flex items-center gap-1">
-                                <i class="fa-solid fa-gauge-high text-orange-500"></i> Độ khó:
+                                Độ khó:
                             </label>
                             <div class="flex flex-col gap-1.5" id="difficulty-container"></div>
                         </div>
                         <div>
                             <label class="block text-gray-700 font-bold text-[12px] mb-2 uppercase">
-                                2. Bảng Cửu Chương:
+                                Bảng Cửu Chương:
                             </label>
                             <div class="grid grid-cols-2 gap-1.5" id="table-container"></div>
                         </div>
                     </div>
-                    <div class="border-t-2 border-gray-200 border-dashed my-2"></div>
-                    <div class="space-y-3">
+                </div>
+
+                <!-- CONTENT TAB: TÙY CHỈNH -->
+                <div id="tab-content-custom" class="space-y-4 hidden">
+                    <div class="bg-blue-50 border-2 border-blue-200 p-3 rounded-xl">
+                        <label class="block text-blue-800 font-black text-sm mb-2 text-center">
+                            Chọn Phép Tính:
+                        </label>
+                        <div class="grid grid-cols-4 gap-2" id="custom-ops-container"></div>
+                    </div>
+                    
+                    <div class="flex gap-3 items-center">
+                        <div class="flex-1 bg-white border-2 border-pink-200 p-2 rounded-xl shadow-sm relative">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-pink-100 text-pink-700 text-xs font-black px-2 py-0.5 rounded-full border border-pink-300">Số [A]</div>
+                            
+                            <div class="flex mb-2 mt-2 bg-gray-100 rounded-lg p-0.5">
+                                <button onclick="setCustomOperandType('A', 'fixed')" id="type-A-fixed" class="flex-1 text-[10px] font-bold py-1 rounded bg-white shadow-sm text-pink-600">Cố định</button>
+                                <button onclick="setCustomOperandType('A', 'random')" id="type-A-random" class="flex-1 text-[10px] font-bold py-1 rounded text-gray-500">Ngẫu nhiên</button>
+                            </div>
+                            
+                            <div id="input-A-fixed" class="">
+                                <input type="number" oninput="updateCustomValue('A', 'fixed', this.value)" class="w-full text-center font-black text-lg p-1 border-2 border-pink-300 rounded-lg outline-none focus:border-pink-500" value="5">
+                            </div>
+                            <div id="input-A-random" class="hidden flex items-center gap-1">
+                                <input type="number" oninput="updateCustomValue('A', 'min', this.value)" class="w-full text-center font-bold text-sm p-1 border-2 border-gray-300 rounded-lg" value="1" placeholder="Từ">
+                                <span class="text-gray-400 text-xs font-bold">-</span>
+                                <input type="number" oninput="updateCustomValue('A', 'max', this.value)" class="w-full text-center font-bold text-sm p-1 border-2 border-gray-300 rounded-lg" value="10" placeholder="Đến">
+                            </div>
+                        </div>
+
+                        <div class="text-2xl font-black text-gray-400">?</div>
+
+                        <div class="flex-1 bg-white border-2 border-orange-200 p-2 rounded-xl shadow-sm relative">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-100 text-orange-700 text-xs font-black px-2 py-0.5 rounded-full border border-orange-300">Số [B]</div>
+                            
+                            <div class="flex mb-2 mt-2 bg-gray-100 rounded-lg p-0.5">
+                                <button onclick="setCustomOperandType('B', 'fixed')" id="type-B-fixed" class="flex-1 text-[10px] font-bold py-1 rounded bg-white shadow-sm text-orange-600">Cố định</button>
+                                <button onclick="setCustomOperandType('B', 'random')" id="type-B-random" class="flex-1 text-[10px] font-bold py-1 rounded text-gray-500">Ngẫu nhiên</button>
+                            </div>
+                            
+                            <div id="input-B-fixed" class="">
+                                <input type="number" oninput="updateCustomValue('B', 'fixed', this.value)" class="w-full text-center font-black text-lg p-1 border-2 border-orange-300 rounded-lg outline-none focus:border-orange-500" value="2">
+                            </div>
+                            <div id="input-B-random" class="hidden flex items-center gap-1">
+                                <input type="number" oninput="updateCustomValue('B', 'min', this.value)" class="w-full text-center font-bold text-sm p-1 border-2 border-gray-300 rounded-lg" value="1" placeholder="Từ">
+                                <span class="text-gray-400 text-xs font-bold">-</span>
+                                <input type="number" oninput="updateCustomValue('B', 'max', this.value)" class="w-full text-center font-bold text-sm p-1 border-2 border-gray-300 rounded-lg" value="10" placeholder="Đến">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t-2 border-gray-200 border-dashed my-4"></div>
+                
+                <!-- CÀI ĐẶT CHUNG -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Số câu hỏi mỗi vòng:</label>
+                        <div class="grid grid-cols-4 gap-2" id="chip-qcount"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Số câu hỏi chung:</label>
-                            <div class="grid grid-cols-4 gap-2" id="chip-qcount"></div>
+                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Giao diện phép tính:</label>
+                            <div class="flex gap-2" id="layout-container"></div>
                         </div>
                         <div>
                             <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Thời gian / Bài (Phút):</label>
                             <div id="time-container" class="flex flex-col gap-2 w-full"></div>
                         </div>
-                        <div>
-                            <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Tổng số vòng thi:</label>
-                            <div class="grid grid-cols-5 gap-1.5" id="chip-rounds"></div>
-                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-500 font-bold text-[11px] uppercase mb-1">Tổng số vòng thi:</label>
+                        <div class="grid grid-cols-5 gap-1.5" id="chip-rounds"></div>
                     </div>
                 </div>
-
-                <button onclick="startGame(false)" class="btn-chibi w-full bg-gradient-to-r from-green-400 to-green-600 text-white font-black text-2xl py-4 rounded-full border-4 border-green-700 shadow-[0_6px_0_#15803d] flex justify-center items-center gap-3 hover:from-green-500 hover:to-green-600">
-                    <i class="fa-solid fa-play"></i> BẮT ĐẦU THI!
-                </button>
             </div>
+
+            <button onclick="startGame(false)" class="btn-chibi w-full bg-gradient-to-r from-green-400 to-green-600 text-white font-black text-2xl py-4 rounded-full border-4 border-green-700 shadow-[0_6px_0_#15803d] flex justify-center items-center gap-3 hover:from-green-500 hover:to-green-600">
+                <i class="fa-solid fa-play"></i> BẮT ĐẦU THI!
+            </button>
         </div>
     </div>
 
@@ -234,7 +315,6 @@
         <div class="sticky top-0 z-40 p-3 md:p-4">
             <div class="max-w-3xl mx-auto bg-white rounded-full border-4 border-gray-800 shadow-[4px_6px_0px_#1f2937] p-2 md:p-3 flex justify-between items-center px-2 md:px-6 transition-all" id="header-bar">
                 <div class="flex items-center gap-2">
-                    <!-- Nút Quay lại / Thoát -->
                     <button onclick="requestExit()" class="btn-chibi w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-100 border-2 border-red-300 text-red-600 flex items-center justify-center hover:bg-red-200" title="Thoát khỏi bài làm">
                         <i class="fa-solid fa-arrow-left text-lg"></i>
                     </button>
@@ -256,14 +336,14 @@
         </div>
 
         <div class="max-w-3xl mx-auto p-4 space-y-6 w-full">
-            <div class="bg-white/60 p-3 md:p-4 rounded-3xl border-4 border-dashed border-gray-300 mb-8 transform transition-transform hover:scale-[1.01]">
-                <h2 class="text-xl md:text-2xl font-black text-blue-600 mb-4 flex items-center gap-2">
+            <div class="bg-white/80 p-3 md:p-4 rounded-3xl border-4 border-dashed border-gray-300 mb-4 shadow-sm">
+                <h2 id="main-section-title" class="text-xl md:text-2xl font-black text-blue-600 mb-4 flex items-center gap-2">
                     <span class="bg-blue-500 text-white p-2 rounded-xl text-sm md:text-base shadow-sm">Phần 1</span> Tổng Hợp
                 </h2>
                 <div id="main-questions-container" class="space-y-4"></div>
             </div>
 
-            <div class="bg-red-50 p-4 md:p-6 rounded-3xl border-4 border-red-300 relative transform transition-transform hover:scale-[1.01]">
+            <div id="table-section-container" class="bg-red-50 p-4 md:p-6 rounded-3xl border-4 border-red-300 relative shadow-sm">
                 <div class="absolute -top-5 -left-2 rotate-[-5deg] bg-yellow-400 text-red-800 font-black px-4 py-1 rounded-full border-4 border-red-800 shadow-sm animate-pulse">
                     🌟 Đặc biệt!
                 </div>
@@ -286,26 +366,26 @@
         <div class="max-w-4xl mx-auto w-full">
             <div class="bg-white rounded-[3rem] border-[6px] border-blue-400 shadow-[8px_12px_0px_#60a5fa] p-6 md:p-8 text-center mb-8 relative">
                 <div id="result-round-badge" class="absolute top-4 left-4 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-2xl font-black border-2 border-indigo-300"></div>
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-600 mb-2 mt-8 md:mt-0">Điểm Bài Này</h2>
-                <div class="flex justify-center items-center gap-2 md:gap-4 my-4 md:my-6">
+                
+                <div id="round-emotion-icon" class="text-6xl md:text-8xl mt-12 md:mt-4 emotion-pop mb-2">⭐</div>
+                
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-600 mb-2">Điểm Bài Này</h2>
+                <div class="flex justify-center items-center gap-2 md:gap-4 my-2">
                     <div id="result-score" class="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-700 animate-bounce">0</div>
                     <div class="text-4xl md:text-6xl font-black text-gray-300">/</div>
                     <div id="result-total" class="text-4xl md:text-6xl font-black text-gray-400">0</div>
                 </div>
                 <h3 id="result-feedback" class="text-2xl md:text-3xl font-black mb-8">...</h3>
                 
-                <!-- Khu vực render Nút điều hướng động -->
-                <div id="round-result-buttons" class="w-full flex flex-col items-center gap-3">
-                    <!-- JS rendered -->
-                </div>
+                <div id="round-result-buttons" class="w-full flex flex-col items-center gap-3"></div>
             </div>
 
             <div class="bg-white rounded-[2rem] border-4 border-gray-300 p-4 md:p-6 shadow-lg space-y-8">
                 <div>
-                    <h3 class="text-xl md:text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">Sửa Bài: Phần Tổng Hợp</h3>
+                    <h3 id="correction-main-title" class="text-xl md:text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">Sửa Bài: Phần Tổng Hợp</h3>
                     <div id="correction-main"></div>
                 </div>
-                <div>
+                <div id="correction-table-container">
                     <h3 id="correction-table-title" class="text-xl md:text-2xl font-bold text-red-600 mb-4 border-b-2 border-red-200 pb-2">Sửa Bài: Bảng Cửu Chương</h3>
                     <div id="correction-table"></div>
                 </div>
@@ -317,13 +397,17 @@
     <div id="view-final-result" class="view-section min-h-screen py-10 px-4 items-center justify-center">
         <div class="max-w-2xl w-full bg-white rounded-[3rem] border-[6px] border-yellow-400 shadow-[8px_12px_0px_#facc15] p-5 md:p-10 relative overflow-hidden">
             <div class="absolute top-0 right-0 p-4 opacity-40"><i class="fa-solid fa-trophy text-yellow-500 text-8xl transform rotate-12"></i></div>
-            <h2 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 mb-6 text-center drop-shadow-sm">
-                BẢNG ĐIỂM TỔNG KẾT
-            </h2>
+            
+            <div class="text-center mb-6">
+                <div id="final-emotion-icon" class="text-7xl mb-2 emotion-pop">🏆</div>
+                <h2 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 drop-shadow-sm">
+                    BẢNG ĐIỂM TỔNG KẾT
+                </h2>
+                <p id="final-encouragement" class="text-lg font-bold text-gray-500 mt-2">Bé làm tốt lắm!</p>
+            </div>
 
-            <!-- Khu vực cuộn hiển thị lịch sử các lần làm -->
-            <div id="final-history-list" class="w-full relative z-10 max-h-[45vh] overflow-y-auto pr-2 custom-scrollbar text-left mb-6">
-                <!-- JS rendered -->
+            <div id="final-history-list" class="w-full relative z-10 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar text-left mb-6">
+                <!-- Lịch sử JS -->
             </div>
 
             <div class="bg-gradient-to-r from-yellow-100 to-orange-100 border-4 border-orange-300 rounded-3xl p-5 md:p-6 text-center mb-6 relative z-10 shadow-inner">
@@ -345,7 +429,6 @@
     </div>
 
     <script>
-        // --- CẤU HÌNH & STATE ---
         const cuteEmojis = ['🐻', '🐰', '🐯', '🦊', '🐷', '🐸', '🐹', '🐥', '🦄', '🦖', '🍎', '🍓', '🎈', '⭐', '🌻'];
         const AUDIO_URLS = {
             click: 'https://actions.google.com/sounds/v1/ui/button_click.ogg',
@@ -357,32 +440,31 @@
         };
 
         const audios = {};
-        for (let key in AUDIO_URLS) {
-            audios[key] = new Audio(AUDIO_URLS[key]);
-        }
+        for (let key in AUDIO_URLS) { audios[key] = new Audio(AUDIO_URLS[key]); }
 
         let config = {
+            setupMode: 'basic', 
+            layout: 'vertical', // Giao diện hiển thị: 'horizontal' hoặc 'vertical'
+            qcount: 10,
+            time: 10,
+            rounds: 1,
+            sound: true,
+            
             ops: { add: true, sub: true, mul: false, div: false },
             difficulty: 'medium', 
             table: 'random', 
-            qcount: 10,
-            time: 10, // Số phút, 0 = Tắt
-            rounds: 1,
-            sound: true
+
+            customOps: { add: true, sub: false, mul: false, div: false },
+            customA: { type: 'fixed', min: 1, max: 10, fixed: 5 },
+            customB: { type: 'fixed', min: 1, max: 10, fixed: 2 }
         };
 
         let state = {
-            currentAttempt: 1, // Lưu số lần làm lại
-            currentRound: 1,
-            mainQs: [],
-            tableQs: [],
-            answers: {},
-            timeLeft: 0,
-            timerId: null,
-            history: [] // Lưu gộp tất cả lịch sử các lần làm
+            currentAttempt: 1, currentRound: 1,
+            mainQs: [], tableQs: [], answers: {},
+            timeLeft: 0, timerId: null, history: []
         };
 
-        // --- GIAO DIỆN KHỞI ĐỘNG (LOADING) ---
         window.addEventListener('load', () => {
             renderSetupUI();
             setTimeout(() => {
@@ -393,7 +475,6 @@
             }, 1200);
         });
 
-        // --- ÂM THANH ---
         function playSound(type) {
             if (!config.sound) return;
             try {
@@ -412,30 +493,45 @@
 
         document.addEventListener('click', (e) => {
             if (e.target.closest('button') || e.target.closest('.chip-btn')) {
-                if (!e.target.closest('[onclick*="playSound"]')) {
-                    playSound('click');
-                }
+                if (!e.target.closest('[onclick*="playSound"]')) playSound('click');
             }
         });
 
-        // --- RENDER SETUP UI ---
+        // --- SETUP UI ---
+        function setSetupMode(mode) {
+            playSound('click'); config.setupMode = mode;
+            const btnBasic = document.getElementById('tab-btn-basic');
+            const btnCustom = document.getElementById('tab-btn-custom');
+            const contentBasic = document.getElementById('tab-content-basic');
+            const contentCustom = document.getElementById('tab-content-custom');
+
+            if (mode === 'basic') {
+                btnBasic.className = "flex-1 py-2 font-black text-sm md:text-base rounded-lg transition-all bg-white text-purple-600 shadow-sm border-2 border-purple-200";
+                btnCustom.className = "flex-1 py-2 font-black text-sm md:text-base rounded-lg transition-all text-gray-500 hover:text-gray-700 border-2 border-transparent bg-transparent";
+                contentBasic.classList.remove('hidden'); contentCustom.classList.add('hidden');
+            } else {
+                btnCustom.className = "flex-1 py-2 font-black text-sm md:text-base rounded-lg transition-all bg-white text-purple-600 shadow-sm border-2 border-purple-200";
+                btnBasic.className = "flex-1 py-2 font-black text-sm md:text-base rounded-lg transition-all text-gray-500 hover:text-gray-700 border-2 border-transparent bg-transparent";
+                contentCustom.classList.remove('hidden'); contentBasic.classList.add('hidden');
+            }
+        }
+
         function renderSetupUI() {
-            // 1. Phép toán
             const opsConfig = [
                 { id: 'add', label: '+', color: 'bg-green-100 text-green-700 border-green-300' },
                 { id: 'sub', label: '-', color: 'bg-red-100 text-red-700 border-red-300' },
                 { id: 'mul', label: '×', color: 'bg-blue-100 text-blue-700 border-blue-300' },
                 { id: 'div', label: '÷', color: 'bg-purple-100 text-purple-700 border-purple-300' }
             ];
+            
             let opsHTML = '';
             opsConfig.forEach(op => {
                 const active = config.ops[op.id];
                 const cls = active ? `${op.color} border-b-4 translate-y-0` : 'bg-white text-gray-300 border-gray-200 border-b-2 translate-y-[2px]';
-                opsHTML += `<div onclick="toggleOp('${op.id}')" class="chip-btn flex justify-center items-center py-2 rounded-xl font-black text-2xl transition-all shadow-sm ${cls}">${op.label}</div>`;
+                opsHTML += `<div onclick="toggleOp('basic', '${op.id}')" class="chip-btn flex justify-center items-center py-2 rounded-xl font-black text-2xl transition-all shadow-sm ${cls}">${op.label}</div>`;
             });
             document.getElementById('ops-container').innerHTML = opsHTML;
 
-            // 2. Độ khó
             const diffConfig = [
                 { id: 'easy', label: 'Dễ 🟢', style: 'border-green-400 text-green-700 bg-white' },
                 { id: 'medium', label: 'T.Bình 🟡', style: 'border-yellow-400 text-yellow-700 bg-white' },
@@ -449,10 +545,8 @@
             });
             document.getElementById('difficulty-container').innerHTML = diffHTML;
 
-            // 3. Bảng CC
-            const tables = ['random', 2, 3, 4, 5];
             let tblHTML = '';
-            tables.forEach(t => {
+            ['random', 2, 3, 4, 5].forEach(t => {
                 const active = config.table == t;
                 const cls = active ? 'bg-red-500 text-white border-red-700 border-b-4' : 'bg-white text-red-400 border-red-200 border-b-2';
                 const colSpan = t === 'random' ? 'col-span-2' : '';
@@ -461,42 +555,53 @@
             });
             document.getElementById('table-container').innerHTML = tblHTML;
 
-            // 4. Số câu
-            const qcounts = [5, 10, 15, 20];
+            let customOpsHTML = '';
+            opsConfig.forEach(op => {
+                const active = config.customOps[op.id];
+                const cls = active ? `${op.color} border-b-4 translate-y-0 shadow-sm` : 'bg-white text-gray-300 border-gray-200 border-b-2 translate-y-[2px]';
+                customOpsHTML += `<div onclick="toggleOp('custom', '${op.id}')" class="chip-btn flex justify-center items-center py-2 rounded-lg font-black text-xl transition-all ${cls}">${op.label}</div>`;
+            });
+            document.getElementById('custom-ops-container').innerHTML = customOpsHTML;
+            updateCustomOperandUI('A'); updateCustomOperandUI('B');
+
             let qcHTML = '';
-            qcounts.forEach(v => {
+            [5, 10, 15, 20].forEach(v => {
                 const active = config.qcount === v;
                 const cls = active ? 'bg-pink-500 text-white border-pink-700 border-b-[3px]' : 'bg-white text-pink-500 border-pink-200 border-b-[2px]';
                 qcHTML += `<div onclick="setSetting('qcount', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all ${cls}">${v}</div>`;
             });
             document.getElementById('chip-qcount').innerHTML = qcHTML;
 
-            // 5. Thời gian (CÓ THỂ TÙY CHỈNH/ TẮT)
-            const times = [0, 5, 10, 15]; // 0 là tắt
+            // Xử lý Render UI Cho Giao Diện Ngang/Dọc
+            let layoutHTML = '';
+            const layouts = [
+                { id: 'horizontal', label: '<i class="fa-solid fa-arrows-left-right"></i> Ngang' },
+                { id: 'vertical', label: '<i class="fa-solid fa-arrow-down"></i> Dọc' }
+            ];
+            layouts.forEach(l => {
+                const active = config.layout === l.id;
+                const cls = active ? 'bg-indigo-500 text-white border-indigo-700 border-b-[3px]' : 'bg-white text-indigo-500 border-indigo-200 border-b-[2px]';
+                layoutHTML += `<div onclick="setSetting('layout', '${l.id}')" class="chip-btn text-center py-1.5 px-2 rounded-lg font-black text-[13px] transition-all flex-1 ${cls}">${l.label}</div>`;
+            });
+            document.getElementById('layout-container').innerHTML = layoutHTML;
+
             let tHTML = '<div class="grid grid-cols-4 gap-2">';
+            const times = [0, 5, 10, 15];
             times.forEach(v => {
                 const active = config.time === v;
                 const cls = active ? 'bg-blue-500 text-white border-blue-700 border-b-[3px]' : 'bg-white text-blue-500 border-blue-200 border-b-[2px]';
-                const label = v === 0 ? 'Tắt' : v;
-                tHTML += `<div onclick="setSetting('time', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all flex-1 ${cls}">${label}</div>`;
+                tHTML += `<div onclick="setSetting('time', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all flex-1 ${cls}">${v === 0 ? 'Tắt' : v}</div>`;
             });
             tHTML += '</div>';
-
-            // Nút để nhập số tùy chỉnh
-            const isCustom = !times.includes(config.time);
-            const customCls = isCustom ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-300 border-b-[3px]' : 'bg-white border-blue-200 text-blue-500 border-b-[2px]';
-            tHTML += `<input type="number" inputmode="numeric" pattern="[0-9]*" min="1" max="99" placeholder="Khác" 
-                class="input-chibi w-full px-2 py-1.5 rounded-lg font-black text-sm text-center outline-none transition-all ${customCls}"
-                value="${isCustom && config.time > 0 ? config.time : ''}"
-                oninput="handleCustomTime(this)"
-                onfocus="this.select()">`;
-            
+            const isCustomTime = !times.includes(config.time);
+            const cTimeCls = isCustomTime ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-300 border-b-[3px]' : 'bg-white border-blue-200 text-blue-500 border-b-[2px]';
+            tHTML += `<input type="number" inputmode="numeric" placeholder="Khác" 
+                class="input-chibi w-full px-2 py-1.5 rounded-lg font-black text-sm text-center outline-none transition-all mt-2 ${cTimeCls}"
+                value="${isCustomTime && config.time > 0 ? config.time : ''}" oninput="handleCustomTime(this)">`;
             document.getElementById('time-container').innerHTML = tHTML;
 
-            // 6. Số bài
-            const rounds = [1, 2, 3, 4, 5];
             let rHTML = '';
-            rounds.forEach(v => {
+            [1, 2, 3, 4, 5].forEach(v => {
                 const active = config.rounds === v;
                 const cls = active ? 'bg-emerald-500 text-white border-emerald-700 border-b-[3px]' : 'bg-white text-emerald-500 border-emerald-200 border-b-[2px]';
                 rHTML += `<div onclick="setSetting('rounds', ${v})" class="chip-btn text-center py-1.5 rounded-lg font-black text-sm transition-all ${cls}">${v}</div>`;
@@ -504,180 +609,167 @@
             document.getElementById('chip-rounds').innerHTML = rHTML;
         }
 
-        // --- XỬ LÝ NHẬP THỜI GIAN TÙY CHỈNH ---
+        function toggleOp(mode, id) {
+            playSound('click');
+            const target = mode === 'basic' ? 'ops' : 'customOps';
+            const newOps = { ...config[target], [id]: !config[target][id] };
+            if (Object.values(newOps).some(v => v)) { config[target] = newOps; renderSetupUI(); }
+        }
+
+        function setSetting(key, val) { playSound('click'); config[key] = val; renderSetupUI(); }
+
         window.handleCustomTime = function(el) {
-            let num = parseInt(el.value);
-            if (isNaN(num) || num < 0) {
-                config.time = 0; // Nếu nhập linh tinh thì coi như Tắt
-            } else {
-                config.time = num;
-            }
-            
-            // Cập nhật giao diện mà không re-render để không bị mất focus
+            let num = parseInt(el.value); config.time = (isNaN(num) || num < 0) ? 0 : num;
             const container = document.getElementById('time-container');
-            container.querySelectorAll('.chip-btn').forEach(btn => {
-                btn.className = btn.className.replace('bg-blue-500 text-white border-blue-700 border-b-[3px]', 'bg-white text-blue-500 border-blue-200 border-b-[2px]');
-            });
-            el.className = `input-chibi w-full px-2 py-1.5 rounded-lg font-black text-sm text-center outline-none transition-all bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-300 border-b-[3px]`;
+            container.querySelectorAll('.chip-btn').forEach(btn => btn.className = btn.className.replace('bg-blue-500 text-white border-blue-700 border-b-[3px]', 'bg-white text-blue-500 border-blue-200 border-b-[2px]'));
+            el.className = `input-chibi w-full px-2 py-1.5 rounded-lg font-black text-sm text-center outline-none transition-all mt-2 bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-300 border-b-[3px]`;
         };
 
-        function toggleOp(id) {
-            playSound('click');
-            const newOps = { ...config.ops, [id]: !config.ops[id] };
-            if (Object.values(newOps).some(v => v)) {
-                config.ops = newOps;
-                renderSetupUI();
-            }
+        function setCustomOperandType(operand, type) {
+            playSound('click'); config[`custom${operand}`].type = type; updateCustomOperandUI(operand);
         }
-        function setSetting(key, val) {
-            playSound('click');
-            config[key] = val;
-            renderSetupUI();
+        function updateCustomValue(operand, field, val) {
+            let num = parseInt(val); if (!isNaN(num)) config[`custom${operand}`][field] = num;
+        }
+
+        function updateCustomOperandUI(op) {
+            const data = config[`custom${op}`];
+            const color = op === 'A' ? 'pink' : 'orange';
+            const btnFixed = document.getElementById(`type-${op}-fixed`);
+            const btnRandom = document.getElementById(`type-${op}-random`);
+            const inputFixed = document.getElementById(`input-${op}-fixed`);
+            const inputRandom = document.getElementById(`input-${op}-random`);
+
+            if(data.type === 'fixed') {
+                btnFixed.className = `flex-1 text-[10px] font-bold py-1 rounded bg-white shadow-sm text-${color}-600`;
+                btnRandom.className = `flex-1 text-[10px] font-bold py-1 rounded text-gray-500 bg-transparent`;
+                inputFixed.classList.remove('hidden'); inputRandom.classList.add('hidden');
+            } else {
+                btnRandom.className = `flex-1 text-[10px] font-bold py-1 rounded bg-white shadow-sm text-${color}-600`;
+                btnFixed.className = `flex-1 text-[10px] font-bold py-1 rounded text-gray-500 bg-transparent`;
+                inputRandom.classList.remove('hidden'); inputRandom.classList.add('flex'); inputFixed.classList.add('hidden');
+            }
         }
 
         function randomizeSettings() {
-            playSound('click');
+            playSound('click'); config.setupMode = 'basic'; setSetupMode('basic');
+            config.layout = Math.random() > 0.5 ? 'horizontal' : 'vertical';
             config.rounds = [1, 2, 3, 4, 5][Math.floor(Math.random() * 5)];
-            config.time = [0, 5, 10, 15, 20][Math.floor(Math.random() * 5)]; // Cập nhật có khả năng random ra tắt
+            config.time = [0, 5, 10, 15, 20][Math.floor(Math.random() * 5)];
             config.qcount = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
             config.difficulty = ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)];
             config.table = ['random', 2, 3, 4, 5][Math.floor(Math.random() * 5)];
-            
-            const newOps = {
-                add: Math.random() > 0.5, sub: Math.random() > 0.5,
-                mul: Math.random() > 0.5, div: Math.random() > 0.5
-            };
+            const newOps = { add: Math.random()>0.5, sub: Math.random()>0.5, mul: Math.random()>0.5, div: Math.random()>0.5 };
             if (!newOps.add && !newOps.sub && !newOps.mul && !newOps.div) newOps.add = true;
             config.ops = newOps;
-            
             renderSetupUI();
         }
 
-        // --- MODAL LOGIC (Alert & Confirm) ---
-        function showAlert() {
-            playSound('alert');
-            document.getElementById('alert-modal').classList.add('show');
+        // --- MODALS ---
+        function showAlert() { playSound('alert'); document.getElementById('alert-modal').classList.add('show'); }
+        function closeAlert() { playSound('click'); document.getElementById('alert-modal').classList.remove('show'); }
+        function requestExit() { playSound('alert'); document.getElementById('confirm-modal').classList.add('show'); }
+        function closeConfirmModal() { playSound('click'); document.getElementById('confirm-modal').classList.remove('show'); }
+        function confirmExit() { 
+            playSound('click'); document.getElementById('confirm-modal').classList.remove('show');
+            if (state.timerId) clearInterval(state.timerId); goToSetup(); 
         }
-        function closeAlert() {
-            playSound('click');
-            document.getElementById('alert-modal').classList.remove('show');
-        }
-
-        function requestExit() {
-            playSound('alert');
-            document.getElementById('confirm-modal').classList.add('show');
-        }
-        function closeConfirmModal() {
-            playSound('click');
-            document.getElementById('confirm-modal').classList.remove('show');
-        }
-        function confirmExit() {
-            playSound('click');
-            document.getElementById('confirm-modal').classList.remove('show');
-            if (state.timerId) clearInterval(state.timerId);
-            goToSetup(); 
-        }
-
-        // --- HELPERS ---
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-        const getEmoji = (index) => cuteEmojis[index % cuteEmojis.length];
 
         // --- GAME LOGIC ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const getEmoji = (index) => cuteEmojis[index % cuteEmojis.length];
+        
+        function getCustomOpValue(opData) {
+            if (opData.type === 'fixed') return opData.fixed;
+            let min = Math.min(opData.min, opData.max); let max = Math.max(opData.min, opData.max); return rand(min, max);
+        }
+
         function startGame(isRetry = false) {
             playSound('click');
-            if (!isRetry) {
-                state.currentAttempt = 1;
-                state.history = [];
-            } else {
-                state.currentAttempt++;
-            }
-            state.currentRound = 1;
-            generateRoundQuestions();
-            startPlayingView();
+            if (!isRetry) { state.currentAttempt = 1; state.history = []; } else state.currentAttempt++;
+            state.currentRound = 1; generateRoundQuestions(); startPlayingView();
         }
 
         function generateRoundQuestions() {
-            state.mainQs = [];
-            const activeOps = Object.keys(config.ops).filter(k => config.ops[k]);
+            state.mainQs = []; state.tableQs = [];
             
-            for (let i = 0; i < config.qcount; i++) {
-                const opType = activeOps[Math.floor(Math.random() * activeOps.length)];
-                let leftStr = '', rightStr = '', correctAns = 0;
-
-                if (opType === 'add') {
-                    let a, b;
-                    if (config.difficulty === 'easy') { a = rand(1, 10); b = rand(1, 9); } 
-                    else if (config.difficulty === 'medium') { a = rand(10, 50); b = rand(10, 40); } 
-                    else {
-                        let a1 = rand(1, 7); let a2 = rand(5, 9);
-                        let b1 = rand(1, 8 - a1); let b2 = rand(10 - a2, 9);
-                        a = a1 * 10 + a2; b = b1 * 10 + b2;
+            if (config.setupMode === 'basic') {
+                const activeOps = Object.keys(config.ops).filter(k => config.ops[k]);
+                for (let i = 0; i < config.qcount; i++) {
+                    const opType = activeOps[Math.floor(Math.random() * activeOps.length)];
+                    let a, b, correctAns = 0;
+                    if (opType === 'add') {
+                        if (config.difficulty === 'easy') { a = rand(1, 10); b = rand(1, 9); } 
+                        else if (config.difficulty === 'medium') { a = rand(10, 50); b = rand(10, 40); } 
+                        else { a = rand(11, 79); b = rand(11, 99 - a); }
+                        correctAns = a + b;
+                    } else if (opType === 'sub') {
+                        if (config.difficulty === 'easy') { a = rand(5, 20); b = rand(1, a - 1); } 
+                        else if (config.difficulty === 'medium') { a = rand(20, 99); b = rand(1, a - 1); } 
+                        else { a = rand(30, 99); b = rand(11, a - 1); }
+                        correctAns = a - b;
+                    } else if (opType === 'mul') {
+                        a = rand(2, 5); b = rand(1, 9); correctAns = a * b;
+                    } else if (opType === 'div') {
+                        b = rand(2, 5); const ans = rand(1, 9); a = b * ans; correctAns = ans;
                     }
-                    leftStr = `${a} + ${b} = `; correctAns = a + b;
-                } 
-                else if (opType === 'sub') {
-                    let a, b;
-                    if (config.difficulty === 'easy') { a = rand(5, 20); b = rand(1, a - 1); } 
-                    else if (config.difficulty === 'medium') { a = rand(20, 99); b = rand(1, a - 1); } 
-                    else {
-                        let a1 = rand(2, 9); let a2 = rand(0, 4);
-                        let b1 = rand(1, a1 - 1); let b2 = rand(a2 + 1, 9);
-                        a = a1 * 10 + a2; b = b1 * 10 + b2;
+                    let opStr = opType === 'add' ? '+' : opType === 'sub' ? '-' : opType === 'mul' ? '×' : '÷';
+                    state.mainQs.push({ id: `m_${state.currentAttempt}_${state.currentRound}_${i}`, top: a, bottom: b, op: opStr, result: 'INPUT', correctAns: correctAns, type: opType });
+                }
+
+                const multipliers = [];
+                while(multipliers.length < 5) {
+                    const r = rand(1, 10);
+                    if(!multipliers.includes(r)) multipliers.push(r);
+                }
+                multipliers.forEach((m, index) => {
+                    let t = config.table === 'random' ? rand(2, 5) : config.table;
+                    const isMissingProduct = Math.random() > 0.5;
+                    let q = { id: `t_${state.currentAttempt}_${state.currentRound}_${index}`, op: '×', type: 'table', usedTable: t };
+                    if (isMissingProduct) { q.top = t; q.bottom = m; q.result = 'INPUT'; q.correctAns = t * m; } 
+                    else { q.top = t; q.bottom = 'INPUT'; q.result = t * m; q.correctAns = m; }
+                    state.tableQs.push(q);
+                });
+
+            } else {
+                const activeOps = Object.keys(config.customOps).filter(k => config.customOps[k]);
+                if(activeOps.length === 0) activeOps.push('add');
+
+                for (let i = 0; i < config.qcount; i++) {
+                    const opType = activeOps[Math.floor(Math.random() * activeOps.length)];
+                    let a = getCustomOpValue(config.customA); let b = getCustomOpValue(config.customB); let correctAns = 0;
+
+                    if (opType === 'add') { correctAns = a + b; } 
+                    else if (opType === 'sub') {
+                        if (a < b) { let temp = a; a = b; b = temp; }
+                        correctAns = a - b;
+                    } 
+                    else if (opType === 'mul') { correctAns = a * b; } 
+                    else if (opType === 'div') {
+                        if (b === 0) b = 1; 
+                        let originalA = a; a = originalA * b; correctAns = originalA;
                     }
-                    leftStr = `${a} - ${b} = `; correctAns = a - b;
-                } 
-                else if (opType === 'mul') {
-                    const a = rand(2, 5); const b = rand(1, 9); 
-                    leftStr = `${a} × ${b} = `; correctAns = a * b;
-                } 
-                else if (opType === 'div') {
-                    const b = rand(2, 5); const ans = rand(1, 9); 
-                    const a = b * ans;
-                    leftStr = `${a} ÷ ${b} = `; correctAns = ans;
+                    let opStr = opType === 'add' ? '+' : opType === 'sub' ? '-' : opType === 'mul' ? '×' : '÷';
+                    state.mainQs.push({ id: `c_${state.currentAttempt}_${state.currentRound}_${i}`, top: a, bottom: b, op: opStr, result: 'INPUT', correctAns: correctAns, type: opType });
                 }
-                state.mainQs.push({ id: `m_${state.currentAttempt}_${state.currentRound}_${i}`, leftStr, rightStr, correctAns, type: opType });
             }
-
-            state.tableQs = [];
-            const multipliers = [];
-            while(multipliers.length < 5) {
-                const r = rand(1, 10);
-                if(!multipliers.includes(r)) multipliers.push(r);
-            }
-
-            multipliers.forEach((m, index) => {
-                let leftStr = '', rightStr = '', correctAns = 0;
-                const isMissingProduct = Math.random() > 0.5;
-                let tableForThisQuestion = config.table === 'random' ? rand(2, 5) : config.table;
-
-                if (isMissingProduct) {
-                    leftStr = `${tableForThisQuestion} × ${m} = `; rightStr = ''; correctAns = tableForThisQuestion * m;
-                } else {
-                    leftStr = `${tableForThisQuestion} × `; rightStr = ` = ${tableForThisQuestion * m}`; correctAns = m;
-                }
-                state.tableQs.push({ id: `t_${state.currentAttempt}_${state.currentRound}_${index}`, leftStr, rightStr, correctAns, type: 'table', usedTable: tableForThisQuestion });
-            });
-
-            state.answers = {};
-            state.timeLeft = config.time * 60; // Sẽ bằng 0 nếu người dùng chọn Tắt (0)
+            state.answers = {}; state.timeLeft = config.time * 60;
         }
 
         window.handleInput = function(id, inputEl) {
             inputEl.value = inputEl.value.replace(/[^0-9]/g, '');
             state.answers[id] = inputEl.value;
-            
             const answeredCount = Object.keys(state.answers).filter(k => state.answers[k] !== "").length;
             const total = state.mainQs.length + state.tableQs.length;
             
             const progressEl = document.getElementById('playing-progress');
             progressEl.innerText = `${answeredCount}/${total}`;
-            if (answeredCount === total) progressEl.className = "text-green-600 font-black animate-pulse";
-            else progressEl.className = "text-pink-600 font-black";
+            progressEl.className = answeredCount === total ? "text-green-600 font-black animate-pulse" : "text-pink-600 font-black";
             
             const wrapper = inputEl.closest('.p-4') || inputEl.closest('.p-6');
             const statusDiv = wrapper.querySelector('.status-indicator');
@@ -688,29 +780,65 @@
             }
         };
 
+        // Render HTML riêng biệt cho Giao diện Ngang & Dọc
+        function getQuestionLayoutHTML(q, isCorrection) {
+            let inputEl = '';
+            const isTablePart = q.type === 'table';
+            if (isCorrection) {
+                const userAns = state.answers[q.id];
+                const isAnswered = userAns !== undefined && userAns !== '';
+                const isCorrect = isAnswered && parseInt(userAns) === q.correctAns;
+                const inputAnsClass = !isAnswered ? 'text-gray-400 border-gray-400' : isCorrect ? 'text-green-600 border-green-600' : 'text-red-500 border-red-500 line-through decoration-4';
+                inputEl = `<span class="inline-block border-b-4 mx-1 px-2 text-center min-w-[3rem] ${inputAnsClass}">${isAnswered ? userAns : '?'}</span>`;
+            } else {
+                const inputBorderClass = isTablePart ? "border-red-300 text-red-600 focus:border-pink-500" : "border-gray-300 text-blue-600 focus:border-pink-500";
+                inputEl = `<input type="text" inputmode="numeric" pattern="[0-9]*" 
+                                class="input-chibi w-16 md:w-20 h-12 md:h-14 text-center text-2xl md:text-3xl font-black rounded-xl border-4 bg-white ${inputBorderClass}"
+                                value="${state.answers[q.id] || ''}" oninput="handleInput('${q.id}', this)">`;
+            }
+
+            const topContent = q.top === 'INPUT' ? inputEl : q.top;
+            const bottomContent = q.bottom === 'INPUT' ? inputEl : q.bottom;
+            const resultContent = q.result === 'INPUT' ? inputEl : q.result;
+
+            if (config.layout === 'vertical') {
+                return `
+                    <div class="inline-grid grid-cols-[auto_1fr] gap-x-2 md:gap-x-4 gap-y-1 text-3xl md:text-4xl font-black font-mono justify-items-end items-center mx-auto sm:mx-0">
+                        <div class="col-start-2 pr-1">${topContent}</div>
+                        <div class="col-start-1 text-2xl md:text-3xl justify-self-center text-gray-500">${q.op}</div>
+                        <div class="col-start-2 pr-1">${bottomContent}</div>
+                        <div class="col-span-2 border-t-4 border-gray-700 w-full my-1 rounded-full"></div>
+                        <div class="col-start-2 pr-1">${resultContent}</div>
+                    </div>
+                `;
+            } else { // Horizontal
+                return `
+                    <div class="flex items-center gap-2 md:gap-3 whitespace-nowrap">
+                        ${topContent}
+                        <span class="text-gray-500">${q.op}</span>
+                        ${bottomContent}
+                        <span class="text-gray-500">=</span>
+                        ${resultContent}
+                    </div>
+                `;
+            }
+        }
+
         function renderQuestionRow(q, index, isTablePart = false) {
             const colors = ['bg-blue-100 border-blue-400 shadow-[4px_6px_0px_#60a5fa]', 'bg-pink-100 border-pink-400 shadow-[4px_6px_0px_#f472b6]', 'bg-yellow-100 border-yellow-400 shadow-[4px_6px_0px_#facc15]', 'bg-green-100 border-green-400 shadow-[4px_6px_0px_#4ade80]', 'bg-purple-100 border-purple-400 shadow-[4px_6px_0px_#c084fc]'];
             const colorClass = isTablePart ? "bg-white border-red-400 shadow-[4px_6px_0px_#f87171]" : colors[index % colors.length];
             const emojiBg = isTablePart ? "bg-red-50 border-red-200" : "bg-white border-gray-200";
-            const inputBorderClass = isTablePart ? "border-red-300 text-red-600 focus:border-pink-500" : "border-gray-300 text-blue-600 focus:border-pink-500";
             const emojiIndex = isTablePart ? index + state.mainQs.length : index;
 
             return `
-                <div class="rounded-3xl border-[5px] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:scale-[1.01] ${colorClass}">
-                    <div class="flex items-center gap-3 text-2xl md:text-3xl font-bold text-gray-800 w-full md:w-auto justify-center">
-                        <span class="text-3xl md:text-4xl ${emojiBg} p-2 md:p-3 rounded-2xl shadow-sm border-2 hidden sm:block">
-                            ${getEmoji(emojiIndex)}
-                        </span>
-                        <div class="flex items-center gap-2 md:gap-3 whitespace-nowrap">
-                            ${q.leftStr}
-                            <input type="text" inputmode="numeric" pattern="[0-9]*" 
-                                class="input-chibi w-16 md:w-20 h-12 md:h-16 text-center text-2xl md:text-3xl font-black rounded-2xl border-4 bg-white ${inputBorderClass}"
-                                value="${state.answers[q.id] || ''}"
-                                oninput="handleInput('${q.id}', this)">
-                            ${q.rightStr}
+                <div class="rounded-3xl border-[5px] p-4 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:scale-[1.01] ${colorClass}">
+                    <div class="flex flex-col sm:flex-row items-center gap-4 text-2xl md:text-3xl font-bold text-gray-800 w-full sm:w-auto">
+                        <span class="text-3xl md:text-4xl ${emojiBg} p-2 md:p-3 rounded-2xl shadow-sm border-2">${getEmoji(emojiIndex)}</span>
+                        <div class="flex-1 flex justify-center sm:justify-start w-full min-w-[200px]">
+                            ${getQuestionLayoutHTML(q, false)}
                         </div>
                     </div>
-                    <div class="hidden md:block status-indicator">
+                    <div class="hidden sm:block status-indicator">
                         <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-gray-400">?</div>
                     </div>
                 </div>
@@ -718,61 +846,45 @@
         }
 
         function updateTimerUI() {
-            const badge = document.getElementById('timer-badge');
-            const icon = document.getElementById('timer-icon');
-            
-            // Xử lý riêng khi tắt thời gian
+            const badge = document.getElementById('timer-badge'); const icon = document.getElementById('timer-icon');
             if (config.time === 0) {
-                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-gray-100 text-gray-500 border-gray-300 transition-colors";
-                document.getElementById('timer-text').innerText = "∞";
-                icon.className = "fa-solid fa-infinity";
-                return;
+                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1 rounded-full border-4 bg-gray-100 text-gray-500 border-gray-300";
+                document.getElementById('timer-text').innerText = "∞"; icon.className = "fa-solid fa-infinity"; return;
             }
-
-            const m = Math.floor(state.timeLeft / 60);
-            const s = state.timeLeft % 60;
+            const m = Math.floor(state.timeLeft / 60); const s = state.timeLeft % 60;
             document.getElementById('timer-text').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
             icon.className = "fa-regular fa-clock";
             
-            if (state.timeLeft <= 60) {
-                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-red-100 text-red-600 border-red-300 animate-pulse transition-colors";
-            } else {
-                badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300 transition-colors";
-            }
+            if (state.timeLeft <= 60) badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-red-100 text-red-600 border-red-300 animate-pulse";
+            else badge.className = "text-base md:text-2xl font-black flex items-center gap-1 md:gap-2 px-3 py-1 md:px-4 md:py-1 rounded-full border-4 bg-green-100 text-green-600 border-green-300";
         }
 
         function startPlayingView() {
             document.getElementById('playing-round-badge').innerText = `Bài ${state.currentRound}/${config.rounds}`;
-            const prog = document.getElementById('playing-progress');
-            prog.innerText = `0/${state.mainQs.length + state.tableQs.length}`;
-            prog.className = "text-pink-600 font-black";
+            document.getElementById('playing-progress').innerText = `0/${state.mainQs.length + state.tableQs.length}`;
+            document.getElementById('playing-progress').className = "text-pink-600 font-black";
             
-            let mainHTML = '';
-            state.mainQs.forEach((q, i) => mainHTML += renderQuestionRow(q, i, false));
+            let mainHTML = ''; state.mainQs.forEach((q, i) => mainHTML += renderQuestionRow(q, i, false));
             document.getElementById('main-questions-container').innerHTML = mainHTML;
-
-            let tableHTML = '';
-            state.tableQs.forEach((q, i) => tableHTML += renderQuestionRow(q, i, true));
-            document.getElementById('table-questions-container').innerHTML = tableHTML;
             
-            document.getElementById('table-title').innerText = config.table === 'random' ? "Bảng cửu chương Ngẫu Nhiên" : `Bảng cửu chương ${config.table}`;
+            const titleEl = document.getElementById('main-section-title');
+            if (config.setupMode === 'custom') titleEl.innerHTML = `<span class="bg-blue-500 text-white p-2 rounded-xl text-sm md:text-base shadow-sm">Bé làm bài</span> Phép Tính Tùy Chỉnh`;
+            else titleEl.innerHTML = `<span class="bg-blue-500 text-white p-2 rounded-xl text-sm md:text-base shadow-sm">Phần 1</span> Tổng Hợp`;
 
-            switchView('playing');
-            updateTimerUI();
+            const tableContainer = document.getElementById('table-section-container');
+            if (state.tableQs.length > 0) {
+                let tableHTML = ''; state.tableQs.forEach((q, i) => tableHTML += renderQuestionRow(q, i, true));
+                document.getElementById('table-questions-container').innerHTML = tableHTML;
+                document.getElementById('table-title').innerText = config.table === 'random' ? "Bảng cửu chương Ngẫu Nhiên" : `Bảng cửu chương ${config.table}`;
+                tableContainer.classList.remove('hidden');
+            } else { tableContainer.classList.add('hidden'); }
 
+            switchView('playing'); updateTimerUI();
             if (state.timerId) clearInterval(state.timerId);
-            
-            // Chỉ chạy interval nếu có thiết lập thời gian
             if (config.time > 0) {
                 state.timerId = setInterval(() => {
                     state.timeLeft--;
-                    if (state.timeLeft <= 0) {
-                        state.timeLeft = 0;
-                        clearInterval(state.timerId);
-                        processSubmit(); 
-                    } else {
-                        updateTimerUI();
-                    }
+                    if (state.timeLeft <= 0) { state.timeLeft = 0; clearInterval(state.timerId); processSubmit(); } else updateTimerUI();
                 }, 1000);
             }
         }
@@ -780,43 +892,24 @@
         function attemptSubmitRound() {
             const totalQs = state.mainQs.length + state.tableQs.length;
             const answeredCount = Object.keys(state.answers).filter(k => state.answers[k] !== "").length;
-
-            if (answeredCount < totalQs) {
-                showAlert();
-            } else {
-                processSubmit();
-            }
+            if (answeredCount < totalQs) showAlert(); else processSubmit();
         }
 
         function processSubmit() {
-            if (state.timerId) clearInterval(state.timerId);
-            playSound('submit');
-            
-            let roundScore = 0;
-            const allQs = [...state.mainQs, ...state.tableQs];
-            allQs.forEach(q => {
-                if (parseInt(state.answers[q.id]) === q.correctAns) roundScore++;
-            });
+            if (state.timerId) clearInterval(state.timerId); playSound('submit');
+            let roundScore = 0; const allQs = [...state.mainQs, ...state.tableQs];
+            allQs.forEach(q => { if (parseInt(state.answers[q.id]) === q.correctAns) roundScore++; });
 
             const percentage = Math.round((roundScore / allQs.length) * 100);
             setTimeout(() => {
-                if (percentage === 100) playSound('perfect');
-                else if (percentage >= 80) playSound('good');
-                else playSound('tryHarder');
+                if (percentage === 100) playSound('perfect'); else if (percentage >= 80) playSound('good'); else playSound('tryHarder');
             }, 500);
 
-            // Lưu dữ liệu vào lịch sử với số attempt tương ứng
             state.history.push({
-                attempt: state.currentAttempt,
-                roundNumber: state.currentRound,
-                score: roundScore,
-                total: allQs.length,
-                mainQuestions: [...state.mainQs],
-                tableQuestions: [...state.tableQs],
-                answers: { ...state.answers },
-                tableSetting: config.table
+                attempt: state.currentAttempt, roundNumber: state.currentRound, score: roundScore, total: allQs.length,
+                mainQuestions: [...state.mainQs], tableQuestions: [...state.tableQs], answers: { ...state.answers },
+                tableSetting: config.table, mode: config.setupMode, layout: config.layout
             });
-
             renderRoundResult();
         }
 
@@ -824,35 +917,27 @@
             const userAns = state.answers[q.id];
             const isAnswered = userAns !== undefined && userAns !== '';
             const isCorrect = isAnswered && parseInt(userAns) === q.correctAns;
-            
             const bgClass = isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
-            const inputAnsClass = !isAnswered ? 'text-gray-400 border-gray-400' : isCorrect ? 'text-green-600 border-green-600' : 'text-red-500 border-red-500 line-through decoration-4';
             
-            let statusHTML = '';
-            if (isCorrect) {
-                statusHTML = `<div class="flex items-center gap-1 text-green-600 font-bold bg-green-100 px-3 py-1 md:px-4 md:py-2 rounded-full border-2 border-green-300 shadow-sm"><i class="fa-solid fa-circle-check"></i> Đúng</div>`;
-            } else {
-                statusHTML = `
-                    <div class="flex items-center gap-2 md:gap-3">
-                        <div class="flex items-center gap-1 text-red-500 font-bold bg-red-100 px-2 py-1 md:px-3 md:py-2 rounded-full border-2 border-red-300 shadow-sm text-sm md:text-base"><i class="fa-solid fa-circle-xmark"></i> Sai</div>
-                        <div class="text-base md:text-lg font-black text-green-600 flex items-center gap-1 md:gap-2">Đáp án: <span class="bg-green-200 px-2 py-1 rounded-xl border-2 border-green-500 shadow-sm">${q.correctAns}</span></div>
-                    </div>`;
-            }
+            let statusHTML = isCorrect 
+                ? `<div class="flex items-center gap-1 text-green-600 font-bold bg-green-100 px-3 py-1 md:px-4 md:py-2 rounded-full border-2 border-green-300 shadow-sm"><i class="fa-solid fa-circle-check"></i> Đúng</div>`
+                : `<div class="flex flex-col md:flex-row items-center gap-2 md:gap-3">
+                    <div class="flex items-center gap-1 text-red-500 font-bold bg-red-100 px-2 py-1 md:px-3 md:py-2 rounded-full border-2 border-red-300 shadow-sm text-sm md:text-base"><i class="fa-solid fa-circle-xmark"></i> Sai</div>
+                    <div class="text-base md:text-lg font-black text-green-600 flex items-center gap-1 md:gap-2">Đáp án: <span class="bg-green-200 px-2 py-1 rounded-xl border-2 border-green-500 shadow-sm">${q.correctAns}</span></div>
+                   </div>`;
 
             return `
-                <div class="flex flex-col md:flex-row items-center justify-between p-4 rounded-2xl border-2 mb-3 ${bgClass} transition-all hover:scale-[1.01]">
-                    <div class="text-lg md:text-xl font-bold text-gray-700 flex items-center gap-2 mb-2 md:mb-0">
-                        <span class="text-2xl hidden sm:inline">${getEmoji(index)}</span>
-                        Câu ${index + 1}: 
-                        <span class="ml-1 md:ml-2">
-                            ${q.leftStr}
-                            <span class="inline-block border-b-4 mx-1 px-2 text-center min-w-[3rem] ${inputAnsClass}">
-                                ${isAnswered ? userAns : '?'}
-                            </span>
-                            ${q.rightStr}
-                        </span>
+                <div class="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl border-2 mb-3 ${bgClass} transition-all hover:scale-[1.01] gap-4">
+                    <div class="text-lg md:text-xl font-bold text-gray-700 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${getEmoji(index)}</span>
+                            <span class="whitespace-nowrap">Câu ${index + 1}:</span> 
+                        </div>
+                        <div class="flex-1 flex justify-center sm:justify-start w-full min-w-[200px]">
+                            ${getQuestionLayoutHTML(q, true)}
+                        </div>
                     </div>
-                    <div class="flex items-center gap-4">${statusHTML}</div>
+                    <div class="flex items-center mt-2 sm:mt-0 w-full sm:w-auto justify-center">${statusHTML}</div>
                 </div>
             `;
         }
@@ -865,22 +950,19 @@
             document.getElementById('result-score').innerText = currentData.score;
             document.getElementById('result-total').innerText = currentData.total;
             
-            let feedback = "", feedbackColor = "";
-            if (percentage === 100) { feedback = "Xuất Sắc Tuyệt Đối! 🏆"; feedbackColor = "text-yellow-500"; } 
-            else if (percentage >= 80) { feedback = "Giỏi Quá Bé Ơi! 🌟"; feedbackColor = "text-green-500"; } 
-            else if (percentage >= 50) { feedback = "Cố Gắng Lên Nữa Nhé! 💪"; feedbackColor = "text-blue-500"; } 
-            else { feedback = "Cùng Ôn Tập Lại Nào! 📚"; feedbackColor = "text-orange-500"; }
+            let feedback = "", feedbackColor = "", emotionIcon = "";
+            if (percentage === 100) { feedback = "Xuất Sắc Tuyệt Đối! 🏆"; feedbackColor = "text-yellow-500"; emotionIcon = "🌟"; } 
+            else if (percentage >= 80) { feedback = "Giỏi Quá Bé Ơi! 👏"; feedbackColor = "text-green-500"; emotionIcon = "🔥"; } 
+            else if (percentage >= 50) { feedback = "Cố Gắng Lên Nữa Nhé! 💪"; feedbackColor = "text-blue-500"; emotionIcon = "✨"; } 
+            else { feedback = "Cùng Ôn Tập Lại Nào! 📚"; feedbackColor = "text-orange-500"; emotionIcon = "🌱"; }
             
-            const fbEl = document.getElementById('result-feedback');
-            fbEl.innerText = feedback;
-            fbEl.className = `text-2xl md:text-3xl font-black mb-8 ${feedbackColor}`;
+            const fbEl = document.getElementById('result-feedback'); fbEl.innerText = feedback; fbEl.className = `text-2xl md:text-3xl font-black mb-8 ${feedbackColor}`;
+            const emoEl = document.getElementById('round-emotion-icon'); emoEl.innerText = emotionIcon;
+            emoEl.classList.remove('emotion-pop'); void emoEl.offsetWidth; emoEl.classList.add('emotion-pop');
 
-            // --- RENDER DYNAMIC BUTTONS DỰA VÀO BÀI CUỐI ---
             const isLast = state.currentRound === config.rounds;
             const btnContainer = document.getElementById('round-result-buttons');
-            
             if (isLast) {
-                // Ở bài cuối cùng, cho phép Xem Bảng Điểm, Làm Lại, Trang Chủ
                 btnContainer.innerHTML = `
                     <button onclick="renderFinalResult()" class="btn-chibi w-full text-white font-bold text-xl px-8 py-4 rounded-full border-4 shadow-[0_6px_0_rgba(0,0,0,0.2)] inline-flex justify-center items-center gap-2 bg-purple-500 hover:bg-purple-400 border-purple-700">
                         <i class="fa-solid fa-trophy"></i> Xem Bảng Điểm
@@ -892,104 +974,96 @@
                         <button onclick="goToSetup()" class="btn-chibi flex-1 text-white font-black text-sm md:text-lg py-3 rounded-xl border-b-4 shadow-[0_4px_0_rgba(0,0,0,0.2)] inline-flex justify-center items-center gap-2 bg-gray-500 hover:bg-gray-400 border-gray-700">
                             <i class="fa-solid fa-house"></i> Trang Chủ
                         </button>
-                    </div>
-                `;
+                    </div>`;
             } else {
-                // Nếu chưa là bài cuối, chỉ cho Làm Tiếp
                 btnContainer.innerHTML = `
                     <button onclick="nextRoundOrFinish()" class="btn-chibi w-full md:w-auto text-white font-bold text-xl px-8 py-4 rounded-full border-4 shadow-[0_6px_0_rgba(0,0,0,0.2)] inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-400 border-orange-700">
                         Làm Bài ${state.currentRound + 1} <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                `;
+                    </button>`;
             }
 
-            let cMainHTML = '';
-            currentData.mainQuestions.forEach((q, i) => cMainHTML += renderCorrectionRow(q, i));
+            let cMainHTML = ''; currentData.mainQuestions.forEach((q, i) => cMainHTML += renderCorrectionRow(q, i));
             document.getElementById('correction-main').innerHTML = cMainHTML;
+            document.getElementById('correction-main-title').innerText = currentData.mode === 'custom' ? 'Sửa Bài: Phép Tính Tùy Chỉnh' : 'Sửa Bài: Phần Tổng Hợp';
 
-            let cTableHTML = '';
-            currentData.tableQuestions.forEach((q, i) => cTableHTML += renderCorrectionRow(q, i + currentData.mainQuestions.length));
-            document.getElementById('correction-table').innerHTML = cTableHTML;
-            document.getElementById('correction-table-title').innerText = currentData.tableSetting !== 'random' ? `Sửa Bài: Bảng C.Chương ${currentData.tableSetting}` : "Sửa Bài: Bảng C.Chương Ngẫu Nhiên";
+            const cTableContainer = document.getElementById('correction-table-container');
+            if (currentData.tableQuestions.length > 0) {
+                let cTableHTML = ''; currentData.tableQuestions.forEach((q, i) => cTableHTML += renderCorrectionRow(q, i + currentData.mainQuestions.length));
+                document.getElementById('correction-table').innerHTML = cTableHTML;
+                document.getElementById('correction-table-title').innerText = currentData.tableSetting !== 'random' ? `Sửa Bài: Bảng C.Chương ${currentData.tableSetting}` : "Sửa Bài: Bảng C.Chương Ngẫu Nhiên";
+                cTableContainer.classList.remove('hidden');
+            } else { cTableContainer.classList.add('hidden'); }
 
             switchView('round-result');
         }
 
         function nextRoundOrFinish() {
             playSound('click');
-            if (state.currentRound < config.rounds) {
-                state.currentRound++;
-                generateRoundQuestions();
-                startPlayingView();
-            } else {
-                renderFinalResult();
-            }
+            if (state.currentRound < config.rounds) { state.currentRound++; generateRoundQuestions(); startPlayingView(); } 
+            else renderFinalResult();
         }
 
         function renderFinalResult() {
-            let grandTotalScore = 0; let grandTotalQs = 0;
-            let listHTML = '';
-            
-            // Nhóm lịch sử theo từng Lần Làm (attempt)
+            let grandTotalScore = 0; let grandTotalQs = 0; let listHTML = '';
             const attempts = {};
-            state.history.forEach(r => {
-                if (!attempts[r.attempt]) attempts[r.attempt] = [];
-                attempts[r.attempt].push(r);
-            });
+            state.history.forEach(r => { if (!attempts[r.attempt]) attempts[r.attempt] = []; attempts[r.attempt].push(r); });
 
             for (let att in attempts) {
-                let attemptScore = 0;
-                let attemptQs = 0;
-                let roundsHTML = '';
+                let attemptScore = 0; let attemptQs = 0; let roundsHTML = '';
                 
                 attempts[att].forEach(r => {
-                    attemptScore += r.score;
-                    attemptQs += r.total;
-                    grandTotalScore += r.score;
-                    grandTotalQs += r.total;
+                    attemptScore += r.score; attemptQs += r.total; grandTotalScore += r.score; grandTotalQs += r.total;
+                    let p = Math.round((r.score / r.total) * 100);
+                    let ic = p === 100 ? '🌟' : (p >= 80 ? '🔥' : (p >= 50 ? '✨' : '🌱'));
                     
                     roundsHTML += `
                         <div class="bg-blue-50 border-4 border-blue-200 rounded-2xl p-3 flex justify-between items-center transition-transform hover:scale-[1.02] mt-3">
                             <div class="text-base md:text-lg font-bold text-blue-800 flex items-center gap-2">
                                 <div class="w-8 h-8 md:w-10 md:h-10 bg-blue-500 text-white rounded-full flex items-center justify-center border-2 border-blue-700 shadow-sm">${r.roundNumber}</div>
-                                Bài số ${r.roundNumber}
+                                <span class="hidden sm:inline">Bài số ${r.roundNumber}</span>
                             </div>
-                            <div class="text-xl md:text-2xl font-black text-blue-600">${r.score} / ${r.total}</div>
-                        </div>
-                    `;
+                            <div class="text-lg md:text-2xl font-black text-blue-600 flex items-center gap-2">
+                                ${r.score} / ${r.total} <span class="text-xl md:text-3xl">${ic}</span>
+                            </div>
+                        </div>`;
                 });
                 
+                let modeText = attempts[att][0].mode === 'custom' ? 'Tùy Chỉnh' : 'Cơ Bản';
                 listHTML += `
                     <div class="mb-6 bg-white/80 p-4 rounded-3xl border-4 border-dashed border-gray-300 shadow-sm">
                         <div class="flex justify-between items-center border-b-2 border-gray-200 pb-3">
                             <h3 class="text-lg md:text-xl font-black text-purple-600 flex items-center gap-2">
-                                <i class="fa-solid fa-flag-checkered"></i> Lần làm: ${att}
+                                <i class="fa-solid fa-flag-checkered"></i> Lần làm: ${att} <span class="text-xs bg-purple-200 px-2 rounded ml-1 text-purple-700 border border-purple-300">${modeText}</span>
                             </h3>
                             <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-bold text-[12px] border-2 border-purple-300">
                                 Tổng: ${attemptScore}/${attemptQs}
                             </span>
                         </div>
                         ${roundsHTML}
-                    </div>
-                `;
+                    </div>`;
             }
 
             document.getElementById('final-history-list').innerHTML = listHTML;
             document.getElementById('final-grand-score').innerText = grandTotalScore;
             document.getElementById('final-grand-total').innerText = grandTotalQs;
-            
-            // Đổi tiêu đề nếu bé làm lại nhiều lần
             const numAttempts = Object.keys(attempts).length;
             document.getElementById('final-total-title').innerText = numAttempts > 1 ? `Tổng Điểm (${numAttempts} Lần Làm)` : 'Tổng Điểm Tất Cả Các Bài';
+
+            const finalP = Math.round((grandTotalScore / grandTotalQs) * 100);
+            let finalIcon = "🏆", finalMsg = "";
+            if (finalP === 100) { finalIcon = "🎉"; finalMsg = "Hoàn hảo! Bé quá đỉnh luôn!"; }
+            else if (finalP >= 80) { finalIcon = "🥳"; finalMsg = "Rất tuyệt! Bé làm tốt lắm!"; }
+            else if (finalP >= 50) { finalIcon = "👍"; finalMsg = "Tốt rồi, cố gắng thêm xíu nữa nha!"; }
+            else { finalIcon = "💪"; finalMsg = "Không sao đâu, lần sau bé sẽ làm tốt hơn!"; }
+
+            document.getElementById('final-encouragement').innerText = finalMsg;
+            const finalEmoEl = document.getElementById('final-emotion-icon'); finalEmoEl.innerText = finalIcon;
+            finalEmoEl.classList.remove('emotion-pop'); void finalEmoEl.offsetWidth; finalEmoEl.classList.add('emotion-pop');
 
             switchView('final-result');
         }
 
-        function goToSetup() {
-            playSound('click');
-            renderSetupUI();
-            switchView('setup');
-        }
+        function goToSetup() { playSound('click'); renderSetupUI(); switchView('setup'); }
     </script>
 </body>
 </html>
